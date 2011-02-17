@@ -1,0 +1,24 @@
+h1,h2,h3,h4,h5,h6 { margin: 0; padding: 0; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; }
+input, textarea, button { font-size: 100%; font: inherit; vertical-align: baseline; }
+html {
+	font: menu;
+	color: WindowText;
+	padding: 0;
+	margin: 0;
+}
+
+
+div.section { border: 1px solid ActiveBorder; margin-bottom: 1ex; }
+div.section label { 
+	text-align: baseline;
+}
+
+div.section h1 {	
+	border-bottom: 1px solid ActiveBorder;
+	padding: 1ex;
+	color: CaptionText;
+	background-color: ActiveCaption;
+}
+
+div.section form { padding: 0 1ex; }
+div.section form>div { margin: 1ex 0; }

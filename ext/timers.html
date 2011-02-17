@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src='jquery-1.5.min.js'></script>
+<script type="text/javascript" src='jquery.tmpl.min.js'></script>
+<script type="text/javascript" src='ananke.core.js'></script>
+<script type="text/javascript">
+window.Ananke.model = function(repo) {
+	this.repo = repo;
+	this.update();
+}
+
+$.extend(window.Ananke.model.prototype, {
+	update: function() {
+		var rawItems = localStorage[this.repo]
+		this.items = [];
+		if(rawItems) {
+			var items = JSON.parse(rawItems);
+			for(var i in items) {
+				this.items[i] = new window.Ananke.item(items[i]);
+			}
+		}
+	}, 
+	getItem: function(i) {
+		return this.items[i];
+	},
+	appendItem: function(newItem) {
+		this.items.push(newItem);
+		this.save();
+	},
+	stopItem: function(i) {
+		this.items.splice(i,1);
+		this.save();	
+	},
+	pauseItem: function(i) {
+		this.items[i].pause();
+		this.save();
+	},
+	save: function() {
+		var raw = JSON.stringify(this.items);
+		localStorage[this.repo] = raw;
+		return raw;
+	},
+	clearAllItems: function() {
+		this.items = []
+		this.save();
+	}
+});
+
+window.Ananke.item = function(obj) {
+	this.name = "";
+	this.url = "";
+	this.startTime = new Date();
+	this.isPaused = false;
+	this.pausedTime = 0;
+	this.hasLink = false;
+	if(obj) {
+		for(var i in obj) this[i] = obj[i];
+		this.startTime = new Date(this.startTime);
+		if(this.isPaused) this.isPaused = new Date(this.isPaused);
+		if(this.url) this.hasLink = true;
+	}
+}
+
+$.extend(window.Ananke.item.prototype, {
+	getElapsed: function() {
+		var now = new Date();
+		var ms = (now - this.startTime);
+		if(this.isPaused) ms -= (now - this.isPaused);
+		ms -= this.pausedTime;
+
+		var hours = ms / 1000 / 60 / 60;		
+		if (hours > 1) return Math.round(hours*10)/10 + "h";
+		var minutes = ms / 1000 / 60;
+		if (minutes > 15) return Math.round(minutes/15)*15 + "m";
+		if (minutes > 1) return Math.round(minutes) + "m";
+		var seconds = ms / 1000;
+		return Math.round(seconds) + "s";
+	}, 
+	pause: function() {
+		if(this.isPaused) {
+			this.pausedTime += new Date() - this.isPaused;
+			this.isPaused = false;
+		} else {
+			this.isPaused = new Date();
+		}
+	},
+	getStatus: function() {
+		var status = []
+		if(this.isPaused) status.push("paused");
+		return status.join(" ");
+	}
+})
+
+window.Ananke.controller = function(model) {
+	this.model = model;
+
+	this.newTaskForm = $("#newTask");
+	this.taskLink = $("#taskLink");
+	this.taskName = $("#taskName");
+	this.taskURL = $("#taskURL");
+	this.table = $("#currentTasks tbody");
+	this.taskTemplate = $("#taskTemplate");
+
+	$(".icon.stop").live("click", jQuery.proxy(this.handleStop, this));
+	$(".icon.pause").live("click", jQuery.proxy(this.handlePause, this));
+	$(".icon.link").live("click", jQuery.proxy(this.handleLink, this));
+
+	$("#pauseAll").click(jQuery.proxy(this.pauseAll, this));
+	$("#deleteAll").click(jQuery.proxy(this.deleteAll, this));
+
+	this.taskLink
+		.change(jQuery.proxy(this.updateForm, this));
+
+	
+	this.taskName
+		.blur(jQuery.proxy(this.taskNameUpdate, this))
+		.focus(jQuery.proxy(this.taskNameFocused, this));
+
+	this.newTaskForm.submit(jQuery.proxy(this.createNewTask, this));
+
+	this.updateForm();
+	this.updateTable();	
+	setInterval(jQuery.proxy(this.updateTimes, this), 1000);
+}
+
+window.Ananke.controller.templateHelpers = {
+	getSafeName: function() {
+		return (this.data.name.length < 30) ? this.data.name : this.data.name.substr(0,27).trim() + "..."
+	},
+	getElapsed: function() {
+		return this.data.getElapsed();
+	}, 
+	getStatus: function() {
+		return this.data.getStatus();
+	}
+}
+
+window.Ananke.controller.emptyNameText = "[Timer Name]"
+
+$.extend(window.Ananke.controller.prototype, {
+	handleLink: function(e) {
+		var index = $(e.currentTarget).closest("tr").index();
+		var item = this.model.getItem(index);
+		chrome.tabs.create({url: item.url});
+	},
+	handleStop: function(e) {
+		var index = $(e.currentTarget).closest("tr").index();
+		this.model.stopItem(index);
+		this.updateTable();
+	},
+	handlePause: function(e) {
+		var index = $(e.currentTarget).closest("tr").index();
+		this.model.pauseItem(index);
+		this.updateTable();
+	},
+	pauseAll: function() {
+		for(var i in this.model.items) {
+			if(this.model.items[i].isPaused == false && this.model.items[i]) {
+				this.model.items[i].pause();
+			}
+		}
+		this.model.save();
+		this.updateTable();
+	},
+	deleteAll: function() {
+		var response = confirm("Are you sure you want to delete all timers?");
+		if(!response) return;
+		this.model.items = []
+		this.model.save();
+		this.updateTable();
+	},	
+	isTaskLinkChecked: function() {
+		return !!$("#taskLink:checked").val();
+	}, 
+	createNewTask: function(e){ 
+		if(this.taskName.hasClass("empty"))
+		{
+			this.taskName.focus();
+			return false;
+		}
+
+		if(window.Ananke.options.getPauseOnCreate()) this.pauseAll();
+
+		this.model.appendItem(new window.Ananke.item({
+			name: this.taskName.val(),
+			url: this.taskURL.val()
+		}))
+
+		this.updateTable();
+		return false;
+	},
+	handleGetSelected: function(tab) {
+		this.taskName.val(tab.title).removeClass("empty").attr("readonly", "readonly");
+		this.taskURL.val(tab.url);	
+	},
+	updateForm: function() {
+		if(this.isTaskLinkChecked()) {
+			chrome.tabs.getSelected(null, jQuery.proxy(this.handleGetSelected, this));
+		} else {
+			this.taskName.val("").blur().removeAttr("readonly");
+			this.taskURL.val("");		
+		}
+	},
+	updateTable: function() {
+		this.table.find("tr").remove();
+		if(this.model.items.length == 0) {
+			this.table.append("<tr><td><em>None</em></td></tr>")
+			return;
+		}
+		for(var i = 0; i < this.model.items.length; i++) {
+			var item = this.model.items[i];
+			this.taskTemplate.tmpl(item, this.constructor.templateHelpers).appendTo(this.table).attr("data-item-index", i);
+		}
+	},
+	updateTimes: function() {
+		var items = this.model.items;
+		this.table.find("tr").each(function(i,e) {
+			var tr = $(e);
+			var index = tr.attr("data-item-index");
+			var item = items[index];
+			var newElapsed = item.getElapsed()
+			var target = tr.find("td.elapsed");
+			if(target.text() != newElapsed) target.text(newElapsed);
+		});
+	},
+	taskNameUpdate: function(e) { 
+		if(this.taskName.val())
+			this.taskName.removeClass("empty");
+		else 
+			this.taskName.addClass("empty").val(this.constructor.emptyNameText);
+	},
+
+	taskNameFocused: function(e) {
+		if(this.taskName.hasClass("empty"))
+			this.taskName.removeClass("empty").val("");
+	}
+});
+
+$(function() { 
+	var model = new window.Ananke.model("Ananke.items");
+	var controller = new window.Ananke.controller(model);
+})
+
+</script>
+<script id="taskTemplate" type="text/x-jquery-tmpl">
+	<tr class="${$item.getStatus()}">
+   		<td title="${name}">
+   			{{if hasLink}}
+   			<div class="link icon"></div>
+   			{{/if}}
+   			${$item.getSafeName()}
+   		</td>
+   		<td class="elapsed">${$item.getElapsed()}</td>
+   		<td class="actions">
+   			<div class="pause icon"></div>
+   			<div class="stop icon"></div>
+   		</td>
+	</tr>
+</script>
+<link href="style.css" rel="stylesheet" type="text/css">
+<style>
+h1,h2,h3,h4,h5,h6 { margin: 0; padding: 0; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; }
+input, textarea { font-size: 100%; font: inherit; vertical-align: baseline; }
+html {
+	width: 300px;
+}
+
+input.empty { color: #CCC; }
+
+#newTaskName { text-align: center; }
+#newTaskName input[type='text'] { 
+	width: 260px;
+	text-align: baseline;
+}
+
+#currentTasks { width: 100%; }
+#currentTasks tbody div.icon { 
+	height: 15px;
+	width: 15px;
+	display: inline-block;
+	cursor: pointer;
+	vertical-align: bottom;
+	background-image: url("images/icons.png");
+	background-repeat: none;
+}
+
+#currentTasks col.name { width: 200px; }
+#currentTasks col.actions { width: 55px; }
+#currentTasks tbody td.actions { text-align: center; }
+
+#currentTasks div.icon.pause { background-position: 0 0; }
+#currentTasks div.icon.stop { background-position: 0 -15px; }
+#currentTasks div.icon.link { background-position: -15px -15px; }
+#currentTasks div.icon.paste { outline: 1px solid red; }
+#currentTasks tr.paused div.icon.pause { background-position: -15px 0; }
+
+#allActions { text-align: right; }
+
+</style>
+</head>
+<body>
+
+	<div class="section">
+		<h1>Create New Timer</h1>
+		<form id="newTask">
+			<input type="hidden" id="taskURL">
+			<div id="newTaskName"><input type="text" id="taskName" class="empty" /></div>
+			<div id="newTaskLink"><input type="checkbox" id="taskLink" checked="checked"><label for="taskLink">Link To Current Tab</label></div>
+			<div id="newTaskSubmit"><button type="submit">Start</button></div>
+		</form>
+	</div>
+
+	<div class="section">
+		<h1>Current Timers</h1>
+		<table id="currentTasks">
+			<col class="name" /><col class="time" /><col class="actions" />
+			<tbody></tbody>
+		</table>
+	</div>	
+
+	<div id="allActions">
+		<button id="pauseAll">Pause All</button>
+		<button id="deleteAll">Delete All</button>
+	</div>
+
+</body>
+</html>

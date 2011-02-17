@@ -1,0 +1,33 @@
+<html>
+	<head>
+	<script type="text/javascript" src='jquery-1.5.min.js'></script>
+	<script type="text/javascript" src='ananke.core.js'></script>
+	<script type="text/javascript">
+$(function() {
+	if(window.Ananke.options.getPauseOnCreate())
+		$("#pauseOnCreate").attr("checked", "checked");
+	else 
+		$("#pauseOnCreate").removeAttr("checked");
+
+	$("#save").click(function() {
+		var pauseOnCreate = $("#pauseOnCreate:checked").val();
+
+		window.Ananke.options.setPauseOnCreate(pauseOnCreate);
+
+		$("#status").text("Saved...");
+		setTimeout(function() { $("#status").text(""); }, 1000);
+	});
+})	
+	</script>
+	<link href="style.css" rel="stylesheet" type="text/css">
+	</head>
+	<body>
+	<div class="section">
+		<h1>Ananke Timer Options</h1>
+		<form>
+		<div><input type="checkbox" id="pauseOnCreate"><label for="pauseOnCreate">New Timer Pauses Running Timers</label></div>
+		<button type="button" id="save">Save</button><span id="status"></span>
+		</form>
+	</div>
+	</body>
+</html>
