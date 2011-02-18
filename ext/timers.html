@@ -8,7 +8,7 @@
 window.Ananke.controller = function(model) {
 	this.model = model;
 
-	this.newTaskForm = $("#newTask");
+	this.newTaskForm = $("#newTask form");
 	this.taskLink = $("#taskLink");
 	this.taskName = $("#taskName");
 	this.taskURL = $("#taskURL");
@@ -208,27 +208,31 @@ input.empty { color: #CCC; }
 
 #allActions { text-align: right; }
 
+#newTask form div { margin: 0.5ex; }
+
 </style>
 </head>
 <body>
 
-	<div class="section">
-		<h1>Create New Timer</h1>
-		<form id="newTask">
-			<input type="hidden" id="taskURL">
-			<div id="newTaskName"><input type="text" id="taskName" class="empty" /></div>
-			<div id="newTaskLink"><input type="checkbox" id="taskLink" checked="checked"><label for="taskLink">Link To Current Tab</label></div>
-			<div id="newTaskSubmit"><button type="submit">Start</button></div>
-		</form>
-	</div>
+	<section id="newTask">
+		<header>Create New Timer</header>
+		<details>
+			<form>
+				<input type="hidden" id="taskURL">
+				<div id="newTaskName"><input type="text" id="taskName" class="empty" /></div>
+				<div id="newTaskLink"><input type="checkbox" id="taskLink" checked="checked"><label for="taskLink">Link To Current Tab</label></div>
+				<div id="newTaskSubmit"><button type="submit">Start</button></div>
+			</form>
+		</details>
+	</section>
 
-	<div class="section">
-		<h1>Current Timers</h1>
+	<section>
+		<header>Current Timers</header>
 		<table id="currentTasks">
 			<col class="name" /><col class="time" /><col class="actions" />
 			<tbody></tbody>
 		</table>
-	</div>	
+	</section>	
 
 	<div id="allActions">
 		<button id="pauseAll">Pause All</button>

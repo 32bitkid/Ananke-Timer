@@ -1,5 +1,6 @@
 <html>
 	<head>
+	<title>Ananke Options</title>
 	<script type="text/javascript" src='jquery-1.5.min.js'></script>
 	<script type="text/javascript" src='ananke.core.js'></script>
 	<script type="text/javascript">
@@ -9,25 +10,56 @@ $(function() {
 	else 
 		$("#pauseOnCreate").removeAttr("checked");
 
+	switch(window.Ananke.options.getBadgeSetting()) {
+		case Ananke.options.badgeSettings.showCurrentlyRunning:
+			$("#badgeAlertCurrent").attr("checked", "checked");
+			break;
+		case Ananke.options.badgeSettings.showOnNoneRunning:
+			$("#badgeAlertNone").attr("checked", "checked");
+			break;			
+		default:
+			$("#badgeNever").attr("checked", "checked");	
+	}
+
+	
+
 	$("#save").click(function() {
 		var pauseOnCreate = $("#pauseOnCreate:checked").val();
+		var badgeSetting = $("[name='badgeOptions']:checked").val();
 
 		window.Ananke.options.setPauseOnCreate(pauseOnCreate);
+		window.Ananke.options.setBadgeSetting(badgeSetting);
 
 		$("#status").text("Saved...");
+		window.Ananke.initBadge();
 		setTimeout(function() { $("#status").text(""); }, 1000);
 	});
 })	
 	</script>
 	<link href="style.css" rel="stylesheet" type="text/css">
+	<style>
+html { 
+	margin: 1em;
+	background-color: #999;
+}
+body { background-color: white; padding: 1em; width: 500px; margin: 0 auto; }
+	</style>
 	</head>
 	<body>
-	<div class="section">
-		<h1>Ananke Timer Options</h1>
-		<form>
-		<div><input type="checkbox" id="pauseOnCreate"><label for="pauseOnCreate">New Timer Pauses Running Timers</label></div>
-		<button type="button" id="save">Save</button><span id="status"></span>
-		</form>
-	</div>
+	<section>
+		<header>General Options</header>
+		<details>
+			<div><input type="checkbox" id="pauseOnCreate"><label for="pauseOnCreate">New Timer Pauses Running Timers</label></div>
+		</details>
+	</section>
+	<section>
+		<header>Badge Options</header>
+		<details>
+			<div><input type="radio" name="badgeOptions" value="0" id="badgeNever" /><label for="">Never Show</label></div>
+			<div><input type="radio" name="badgeOptions" value="1" id="badgeAlertCurrent" /><label for="">Show Current Timers</label></div>
+			<div><input type="radio" name="badgeOptions" value="2" id="badgeAlertNone" /><label for="">Show When No Timers Are Running</label></div>
+		</details>
+	</section>
+	<button type="button" id="save">Save</button><span id="status"></span>
 	</body>
 </html>

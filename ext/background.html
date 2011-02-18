@@ -2,15 +2,6 @@
 <script type="text/javascript" src='jquery-1.5.min.js'></script>
 <script type="text/javascript" src='ananke.core.js'></script>
 <script>
-(function() {
-	var model = new window.Ananke.ItemsRepository("Ananke.items");
-	var running = 0;
-	for(var i = 0; i < model.items.length; i++) {
-		var item = model.items[i];
-		if (item.isPaused == false) running++;
-	}
-
-	window.Ananke.updateBadge(running);
-})();
+window.Ananke.initBadge();
 </script>
 </html>
