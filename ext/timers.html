@@ -186,10 +186,12 @@ $(function() {
 </script>
 <script id="taskTemplate" type="text/x-jquery-tmpl">
 	<tr class="${$item.getStatus()}">
-   		<td title="${name}">
-   			{{if hasLink}}
+		<td>
+			{{if hasLink}}
    			<div class="link icon"></div>
    			{{/if}}
+		</td>
+   		<td class="name" title="${name}">
    			${$item.getSafeName()}
    		</td>
    		<td class="elapsed">${$item.getElapsed()}</td>
@@ -265,7 +267,7 @@ ul.buttonList li { display: inline; }
 		<header>Current Timers</header>
 		<details>
 			<table id="currentTasks">
-				<col class="name" /><col class="time" /><col class="actions" />
+				<col class="link" /><col class="name" /><col class="time" /><col class="actions" />
 				<tbody></tbody>
 			</table>
 		</details>
