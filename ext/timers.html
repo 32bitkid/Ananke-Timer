@@ -8,12 +8,15 @@
 window.Ananke.controller = function(model) {
 	this.model = model;
 
-	this.newTaskForm = $("#newTask form");
-	this.taskLink = $("#taskLink");
-	this.taskName = $("#taskName");
-	this.taskURL = $("#taskURL");
+	this.newTaskForm = $("#newTask");
+	this.taskLink = this.newTaskForm.find("input[name='linkBehavior']");
+	this.taskName = this.newTaskForm.find("input[name='name']");
+	this.taskURL = this.newTaskForm.find("input[name='url']");
 	this.table = $("#currentTasks tbody");
 	this.taskTemplate = $("#taskTemplate");
+
+	var setting = window.Ananke.options.getLinkType();
+	this.taskLink.filter("*[value='"+setting+"']").click();	
 
 	$(".icon.stop").live("click", jQuery.proxy(this.handleStop, this));
 	$(".icon.pause").live("click", jQuery.proxy(this.handlePause, this));
@@ -23,17 +26,22 @@ window.Ananke.controller = function(model) {
 	$("#deleteAll").click(jQuery.proxy(this.deleteAll, this));
 
 	this.taskLink
-		.change(jQuery.proxy(this.updateForm, this));
+		.click(jQuery.proxy(this.updateForm, this));
 
 	
 	this.taskName
 		.blur(jQuery.proxy(this.taskNameUpdate, this))
 		.focus(jQuery.proxy(this.taskNameFocused, this));
 
+	this.taskURL
+		.blur(jQuery.proxy(this.taskURLUpdate, this))
+		.focus(jQuery.proxy(this.taskURLFocused, this));		
+
 	this.newTaskForm.submit(jQuery.proxy(this.createNewTask, this));
 
 	this.updateForm();
 	this.updateTable();	
+
 	setInterval(jQuery.proxy(this.updateTimes, this), 1000);
 }
 
@@ -50,6 +58,7 @@ window.Ananke.controller.templateHelpers = {
 }
 
 window.Ananke.controller.emptyNameText = "[Timer Name]"
+window.Ananke.controller.emptyURLText = "[URL]"
 
 $.extend(window.Ananke.controller.prototype, {
 	handleLink: function(e) {
@@ -77,8 +86,8 @@ $.extend(window.Ananke.controller.prototype, {
 		this.model.stopAll();
 		this.updateTable();
 	},	
-	isTaskLinkChecked: function() {
-		return !!$("#taskLink:checked").val();
+	getLinkSetting: function() {
+		return this.taskLink.filter("*:checked").val();
 	}, 
 	createNewTask: function(e){ 
 		if(this.taskName.hasClass("empty"))
@@ -99,15 +108,25 @@ $.extend(window.Ananke.controller.prototype, {
 	},
 	handleGetSelected: function(tab) {
 		this.taskName.val(tab.title).removeClass("empty").attr("readonly", "readonly");
-		this.taskURL.val(tab.url);	
+		this.taskURL.val(tab.url).removeClass("empty").attr("readonly", "readonly");	
 	},
 	updateForm: function() {
-		if(this.isTaskLinkChecked()) {
+		var setting = this.getLinkSetting();
+		switch(setting) {
+			case "current":
 			chrome.tabs.getSelected(null, jQuery.proxy(this.handleGetSelected, this));
-		} else {
+			this.taskURL.hide();
+			break;
+			case "none":
 			this.taskName.val("").blur().removeAttr("readonly");
-			this.taskURL.val("");		
+			this.taskURL.val("").hide();
+			break;
+			case "manual":
+			this.taskName.val("").blur().removeAttr("readonly");
+			this.taskURL.val("").blur().removeAttr("readonly").show();
+			break;
 		}
+		window.Ananke.options.setLinkType(setting);
 	},
 	updateTable: function() {
 		this.table.find("tr").remove();
@@ -129,10 +148,12 @@ $.extend(window.Ananke.controller.prototype, {
 		this.table.find("tr").each(function(i,e) {
 			var tr = $(e);
 			var index = tr.attr("data-item-index");
-			var item = items[index];
-			var newElapsed = item.getElapsed()
-			var target = tr.find("td.elapsed");
-			if(target.text() != newElapsed) target.text(newElapsed);
+			if(index) {
+				var item = items[index];
+				var newElapsed = item.getElapsed()
+				var target = tr.find("td.elapsed");
+				if(target.text() != newElapsed) target.text(newElapsed);
+			}
 		});
 	},
 	taskNameUpdate: function(e) { 
@@ -141,11 +162,20 @@ $.extend(window.Ananke.controller.prototype, {
 		else 
 			this.taskName.addClass("empty").val(this.constructor.emptyNameText);
 	},
-
+	taskURLUpdate: function(e) { 
+		if(this.taskURL.val())
+			this.taskURL.removeClass("empty");
+		else 
+			this.taskURL.addClass("empty").val(this.constructor.emptyURLText);
+	},
 	taskNameFocused: function(e) {
 		if(this.taskName.hasClass("empty"))
 			this.taskName.removeClass("empty").val("");
-	}
+	},
+	taskURLFocused: function(e) {
+		if(this.taskURL.hasClass("empty"))
+			this.taskURL.removeClass("empty").val("");
+	}	
 });
 
 $(function() { 
@@ -171,19 +201,17 @@ $(function() {
 </script>
 <link href="style.css" rel="stylesheet" type="text/css">
 <style>
-h1,h2,h3,h4,h5,h6 { margin: 0; padding: 0; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; }
-input, textarea { font-size: 100%; font: inherit; vertical-align: baseline; }
-html {
-	width: 300px;
-}
-
 input.empty { color: #CCC; }
 
-#newTaskName { text-align: center; }
-#newTaskName input[type='text'] { 
+#newTaskName input[type='text'], #newTaskUrl input[type='text'] { 
 	width: 260px;
 	text-align: baseline;
+	padding: 0.5ex;
+	font-size: 1.5em;
 }
+
+#newTaskLink input { width: 33%; margin: 0; padding: 0; }
+#newTaskLink label { display: inline-block; width: 33%; margin: 0; padding: 0; text-align: center; }
 
 #currentTasks { width: 100%; }
 #currentTasks tbody div.icon { 
@@ -206,38 +234,47 @@ input.empty { color: #CCC; }
 #currentTasks div.icon.paste { outline: 1px solid red; }
 #currentTasks tr.paused div.icon.pause { background-position: -15px 0; }
 
-#allActions { text-align: right; }
-
-#newTask form div { margin: 0.5ex; }
+#newTask form li { margin: 0.5ex 0; }
+ul.buttonList { text-align: right; margin-bottom: 1em; }
+ul.buttonList li { display: inline; }
 
 </style>
 </head>
 <body>
 
-	<section id="newTask">
-		<header>Create New Timer</header>
-		<details>
-			<form>
-				<input type="hidden" id="taskURL">
-				<div id="newTaskName"><input type="text" id="taskName" class="empty" /></div>
-				<div id="newTaskLink"><input type="checkbox" id="taskLink" checked="checked"><label for="taskLink">Link To Current Tab</label></div>
-				<div id="newTaskSubmit"><button type="submit">Start</button></div>
-			</form>
-		</details>
-	</section>
+	<form id="newTask">
+		<section>
+			<header>Create New Timer</header>
+			<details>
+				
+					<ul>
+						<li id="newTaskName"><input type="text" name="name" class="empty" /></li>
+						<li id="newTaskUrl"><input type="text" name="url" class="empty" /></li>
+						<li id="newTaskLink">
+							<input name="linkBehavior" type="radio" id="taskLinkNone" value="none" /><input name="linkBehavior" type="radio" id="taskLinkCurrent" checked="checked" value="current" /><input name="linkBehavior" type="radio" id="taskLinkManual" value="manual" />
+							<label for="taskLinkNone">None</label><label for="taskLinkCurrent">Current Tab</label><label for="taskLinkManual">Manual</label>
+						</li>
+					</ul>
+				
+			</details>
+		</section>
+		<ul class="buttonList"><li><button type="submit">Start</button></li></ul>
+	</form>
 
 	<section>
 		<header>Current Timers</header>
-		<table id="currentTasks">
-			<col class="name" /><col class="time" /><col class="actions" />
-			<tbody></tbody>
-		</table>
+		<details>
+			<table id="currentTasks">
+				<col class="name" /><col class="time" /><col class="actions" />
+				<tbody></tbody>
+			</table>
+		</details>
 	</section>	
 
-	<div id="allActions">
-		<button id="pauseAll">Pause All</button>
-		<button id="deleteAll">Delete All</button>
-	</div>
+	<ul class="buttonList">
+		<li><button id="pauseAll">Pause All</button></li>
+		<li><button id="deleteAll">Delete All</button></li>
+	</ul>
 
 </body>
 </html>

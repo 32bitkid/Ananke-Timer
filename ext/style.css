@@ -1,26 +1,42 @@
-h1,h2,h3,h4,h5,h6 { margin: 0; padding: 0; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; }
+h1,h2,h3,h4,h5,h6, ul, li { margin: 0; padding: 0; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; }
 input, textarea, button { font-size: 100%; font: inherit; vertical-align: baseline; }
+
+ul, ol { list-style: none; }
 
 fieldset { margin: 1ex; }
 
 html {
 	font: menu;
-	color: WindowText;
+	color: black;
 	padding: 0;
 	margin: 0;
+	font-size: 10px;
 }
 
 
-section { border: 1px solid ActiveBorder; margin-bottom: 1em; }
+section { margin-bottom: 1em; }
 section label { 
 	text-align: baseline;
 }
 
 section header {	
-	border-bottom: 1px solid ActiveBorder;
 	padding: 1ex;
-	color: CaptionText;
-	background-color: ActiveCaption;
+	color: white;
+	background-color: #268;
+	font-weight: 700;
+	border-bottom: 2px solid #CCC; 
+	border-radius: 3px 3px 0 0;
+	text-transform: uppercase;
 }
 
-section details { padding: 1ex; display: block; }
+section details { padding: 1ex; display: block; border: 1px solid #CCC; border-top: none;  }
+
+button {
+	background-color: #268;
+	color: white;
+	font-weight: bold;
+	padding: 1ex 2em;
+	border-radius: 3px;
+	border: 1px solid #134;
+	text-transform: uppercase;
+}
