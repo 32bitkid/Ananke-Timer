@@ -1,5 +1,9 @@
 window.Ananke = {};
 
+window.Ananke.updateBadge = function(running) {
+	chrome.browserAction.setBadgeText({text: (running > 0) ? running.toString() : "" });
+}
+
 window.Ananke.options = {
 	getPauseOnCreate: function() { return localStorage["Ananke.options.pauseOnCreate"] == "true" },
 	setPauseOnCreate: function(val) { localStorage["Ananke.options.pauseOnCreate"] = (val) ? "true" : "false"; }
