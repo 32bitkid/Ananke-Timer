@@ -37,6 +37,22 @@ button {
 	font-weight: bold;
 	padding: 1ex 2em;
 	border-radius: 3px;
-	border: 1px solid #134;
+	border: 1px solid #0b4156;
 	text-transform: uppercase;
+	-webkit-box-shadow: 2px 2px 4px #999;
+}
+
+button:hover {
+	background-color: #5b99bc;
+	border-color: #268;
+}
+
+
+button:active {
+	position: relative;
+	top: 2px;
+	left: 1px;
+	background-color: #407fa1;
+	border-color: #268;
+	-webkit-box-shadow: 1px 0px 1px #999;
 }
