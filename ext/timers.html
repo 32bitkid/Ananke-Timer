@@ -5,93 +5,6 @@
 <script type="text/javascript" src='jquery.tmpl.min.js'></script>
 <script type="text/javascript" src='ananke.core.js'></script>
 <script type="text/javascript">
-window.Ananke.model = function(repo) {
-	this.repo = repo;
-	this.update();
-}
-
-$.extend(window.Ananke.model.prototype, {
-	update: function() {
-		var rawItems = localStorage[this.repo]
-		this.items = [];
-		if(rawItems) {
-			var items = JSON.parse(rawItems);
-			for(var i in items) {
-				this.items[i] = new window.Ananke.item(items[i]);
-			}
-		}
-	}, 
-	getItem: function(i) {
-		return this.items[i];
-	},
-	appendItem: function(newItem) {
-		this.items.push(newItem);
-		this.save();
-	},
-	stopItem: function(i) {
-		this.items.splice(i,1);
-		this.save();	
-	},
-	pauseItem: function(i) {
-		this.items[i].pause();
-		this.save();
-	},
-	save: function() {
-		var raw = JSON.stringify(this.items);
-		localStorage[this.repo] = raw;
-		return raw;
-	},
-	clearAllItems: function() {
-		this.items = []
-		this.save();
-	}
-});
-
-window.Ananke.item = function(obj) {
-	this.name = "";
-	this.url = "";
-	this.startTime = new Date();
-	this.isPaused = false;
-	this.pausedTime = 0;
-	this.hasLink = false;
-	if(obj) {
-		for(var i in obj) this[i] = obj[i];
-		this.startTime = new Date(this.startTime);
-		if(this.isPaused) this.isPaused = new Date(this.isPaused);
-		if(this.url) this.hasLink = true;
-	}
-}
-
-$.extend(window.Ananke.item.prototype, {
-	getElapsed: function() {
-		var now = new Date();
-		var ms = (now - this.startTime);
-		if(this.isPaused) ms -= (now - this.isPaused);
-		ms -= this.pausedTime;
-
-		var hours = ms / 1000 / 60 / 60;		
-		if (hours > 1) return Math.round(hours*10)/10 + "h";
-		var minutes = ms / 1000 / 60;
-		if (minutes > 15) return Math.round(minutes/15)*15 + "m";
-		if (minutes > 1) return Math.round(minutes) + "m";
-		var seconds = ms / 1000;
-		return Math.round(seconds) + "s";
-	}, 
-	pause: function() {
-		if(this.isPaused) {
-			this.pausedTime += new Date() - this.isPaused;
-			this.isPaused = false;
-		} else {
-			this.isPaused = new Date();
-		}
-	},
-	getStatus: function() {
-		var status = []
-		if(this.isPaused) status.push("paused");
-		return status.join(" ");
-	}
-})
-
 window.Ananke.controller = function(model) {
 	this.model = model;
 
@@ -155,19 +68,13 @@ $.extend(window.Ananke.controller.prototype, {
 		this.updateTable();
 	},
 	pauseAll: function() {
-		for(var i in this.model.items) {
-			if(this.model.items[i].isPaused == false && this.model.items[i]) {
-				this.model.items[i].pause();
-			}
-		}
-		this.model.save();
+		this.model.pauseAll();
 		this.updateTable();
 	},
 	deleteAll: function() {
 		var response = confirm("Are you sure you want to delete all timers?");
 		if(!response) return;
-		this.model.items = []
-		this.model.save();
+		this.model.stopAll();
 		this.updateTable();
 	},	
 	isTaskLinkChecked: function() {
@@ -180,9 +87,9 @@ $.extend(window.Ananke.controller.prototype, {
 			return false;
 		}
 
-		if(window.Ananke.options.getPauseOnCreate()) this.pauseAll();
+		if(window.Ananke.options.getPauseOnCreate()) this.model.pauseAll();
 
-		this.model.appendItem(new window.Ananke.item({
+		this.model.appendItem(new window.Ananke.Item({
 			name: this.taskName.val(),
 			url: this.taskURL.val()
 		}))
@@ -238,7 +145,7 @@ $.extend(window.Ananke.controller.prototype, {
 });
 
 $(function() { 
-	var model = new window.Ananke.model("Ananke.items");
+	var model = new window.Ananke.ItemsRepository("Ananke.items");
 	var controller = new window.Ananke.controller(model);
 })
 
