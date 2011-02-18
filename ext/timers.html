@@ -94,6 +94,14 @@ $.extend(window.Ananke.controller.prototype, {
 			return false;
 		}
 
+		if(this.getLinkSetting() == "manual"
+			&& (this.taskURL.hasClass("empty")
+				|| !(/^(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(([0-9]{1,5})?\/.*)?$/ix).test(this.taskURL.val())))
+		{
+			this.taskURL.focus();
+			return false;
+		}
+
 		if(window.Ananke.options.getPauseOnCreate()) this.model.pauseAll();
 
 		this.model.appendItem(new window.Ananke.Item({
