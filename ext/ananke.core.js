@@ -106,6 +106,16 @@ window.Ananke.Item = function(obj) {
 	}
 }
 
+window.Ananke.Item.msToHumanTime = function(ms) {
+	var hours = ms / 1000 / 60 / 60;		
+	if (hours > 1) return Math.round(hours*10)/10 + "h";
+	var minutes = ms / 1000 / 60;
+	if (minutes > 15) return Math.round(minutes/15)*15 + "m";
+	if (minutes > 1) return Math.round(minutes) + "m";
+	var seconds = ms / 1000;
+	return Math.round(seconds) + "s";
+}
+
 $.extend(window.Ananke.Item.prototype, {
 	getElapsed: function() {
 		var now = new Date();
@@ -113,13 +123,11 @@ $.extend(window.Ananke.Item.prototype, {
 		if(this.isPaused) ms -= (now - this.isPaused);
 		ms -= this.pausedTime;
 
-		var hours = ms / 1000 / 60 / 60;		
-		if (hours > 1) return Math.round(hours*10)/10 + "h";
-		var minutes = ms / 1000 / 60;
-		if (minutes > 15) return Math.round(minutes/15)*15 + "m";
-		if (minutes > 1) return Math.round(minutes) + "m";
-		var seconds = ms / 1000;
-		return Math.round(seconds) + "s";
+		return ms;
+	}, 	
+	getHumanElapsed: function() {
+		var ms = this.getElapsed();
+		return this.constructor.msToHumanTime(ms);
 	}, 
 	pause: function() {
 		if(this.isPaused) {

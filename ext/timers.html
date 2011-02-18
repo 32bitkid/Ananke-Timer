@@ -13,6 +13,7 @@ window.Ananke.controller = function(model) {
 	this.taskName = this.newTaskForm.find("input[name='name']");
 	this.taskURL = this.newTaskForm.find("input[name='url']");
 	this.table = $("#currentTasks tbody");
+	this.totalTime = $("#currentTasks tfoot td.total");
 	this.taskTemplate = $("#taskTemplate");
 
 	var setting = window.Ananke.options.getLinkType();
@@ -49,9 +50,6 @@ window.Ananke.controller.templateHelpers = {
 	getSafeName: function() {
 		return (this.data.name.length < 30) ? this.data.name : this.data.name.substr(0,27).trim() + "..."
 	},
-	getElapsed: function() {
-		return this.data.getElapsed();
-	}, 
 	getStatus: function() {
 		return this.data.getStatus();
 	}
@@ -131,7 +129,7 @@ $.extend(window.Ananke.controller.prototype, {
 	updateTable: function() {
 		this.table.find("tr").remove();
 		if(this.model.items.length == 0) {
-			this.table.append("<tr><td><em>None</em></td></tr>")
+			this.table.append("<tr><td></td><td><em>None</em></td></tr>")
 			return;
 		}
 		var running = 0;
@@ -142,19 +140,26 @@ $.extend(window.Ananke.controller.prototype, {
 		}
 
 		window.Ananke.updateBadge(running);
+		this.updateTimes();
+
 	},
 	updateTimes: function() {
 		var items = this.model.items;
+		var total = 0;
+
 		this.table.find("tr").each(function(i,e) {
 			var tr = $(e);
 			var index = tr.attr("data-item-index");
 			if(index) {
 				var item = items[index];
-				var newElapsed = item.getElapsed()
+				total += item.getElapsed();
+				var newElapsed = item.getHumanElapsed()
 				var target = tr.find("td.elapsed");
 				if(target.text() != newElapsed) target.text(newElapsed);
 			}
 		});
+
+		this.totalTime.text(Ananke.Item.msToHumanTime(total));
 	},
 	taskNameUpdate: function(e) { 
 		if(this.taskName.val())
@@ -194,7 +199,7 @@ $(function() {
    		<td class="name" title="${name}">
    			${$item.getSafeName()}
    		</td>
-   		<td class="elapsed">${$item.getElapsed()}</td>
+   		<td class="elapsed"></td>
    		<td class="actions">
    			<div class="pause icon"></div>
    			<div class="stop icon"></div>
@@ -226,8 +231,9 @@ input.empty { color: #CCC; }
 	background-repeat: none;
 }
 
-#currentTasks col.name { width: 200px; }
-#currentTasks col.actions { width: 55px; }
+#currentTasks col.link { width: 15px; }
+#currentTasks col.time { width: 30px; }
+#currentTasks col.actions { width: 35px; }
 #currentTasks tbody td.actions { text-align: center; }
 
 #currentTasks div.icon.pause { background-position: 0 0; }
@@ -239,6 +245,8 @@ input.empty { color: #CCC; }
 #newTask form li { margin: 0.5ex 0; }
 ul.buttonList { text-align: right; margin-bottom: 1em; }
 ul.buttonList li { display: inline; }
+
+tfoot { color: #999; }
 
 </style>
 </head>
@@ -269,6 +277,11 @@ ul.buttonList li { display: inline; }
 			<table id="currentTasks">
 				<col class="link" /><col class="name" /><col class="time" /><col class="actions" />
 				<tbody></tbody>
+				<tfoot>
+				<tr>
+				<td></td><td>Total</td><td class="total"></td><td></td>
+				</tr>
+				</tfoot>
 			</table>
 		</details>
 	</section>	
