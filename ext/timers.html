@@ -117,20 +117,20 @@ $.extend(window.Ananke.controller.prototype, {
 		this.taskName.val(tab.title).removeClass("empty").attr("readonly", "readonly");
 		this.taskURL.val(tab.url).removeClass("empty").attr("readonly", "readonly");	
 	},
-	updateForm: function() {
+	updateForm: function(e) {
 		var setting = this.getLinkSetting();
 		switch(setting) {
 			case "current":
 			chrome.tabs.getSelected(null, jQuery.proxy(this.handleGetSelected, this));
-			this.taskURL.hide();
+			this.taskURL.val("").filter(":visible").hide(e ? "blind" : undefined);
 			break;
 			case "none":
 			this.taskName.val("").blur().removeAttr("readonly");
-			this.taskURL.val("").hide();
+			this.taskURL.val("").filter(":visible").hide(e ? "blind" : undefined);
 			break;
 			case "manual":
 			this.taskName.val("").blur().removeAttr("readonly");
-			this.taskURL.val("").blur().removeAttr("readonly").show();
+			this.taskURL.val("").blur().removeAttr("readonly").filter(":hidden").show(e ? "blind" : undefined);
 			break;
 		}
 		window.Ananke.options.setLinkType(setting);
