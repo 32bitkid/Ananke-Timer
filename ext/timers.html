@@ -155,6 +155,8 @@ $.extend(window.Ananke.controller.prototype, {
 		var items = this.model.items;
 		var total = 0;
 
+		var updaterFuct = this._safeUpdateTime;
+
 		this.table.find("tr").each(function(i,e) {
 			var tr = $(e);
 			var index = tr.attr("data-item-index");
@@ -163,11 +165,14 @@ $.extend(window.Ananke.controller.prototype, {
 				total += item.getElapsed();
 				var newElapsed = item.getHumanElapsed()
 				var target = tr.find("td.elapsed");
-				if(target.text() != newElapsed) target.text(newElapsed);
+				updaterFuct(newElapsed, target);
 			}
 		});
 
-		this.totalTime.text(Ananke.Item.msToHumanTime(total));
+		updaterFuct(Ananke.Item.msToHumanTime(total), this.totalTime);
+	},
+	_safeUpdateTime: function(value, target) {
+		if(target.text() != value) target.text(value);
 	},
 	taskNameUpdate: function(e) { 
 		if(this.taskName.val())
