@@ -23,6 +23,7 @@ window.Ananke.controller = function(model) {
 	$(".icon.stop").live("click", jQuery.proxy(this.handleStop, this));
 	$(".icon.pause").live("click", jQuery.proxy(this.handlePause, this));
 	$(".icon.link").live("click", jQuery.proxy(this.handleLink, this));
+	this.table.find("tr").live("mouseover", function() { $(this).addClass("over"); }).live("mouseout", function() { $(this).removeClass("over"); });
 
 	$("#pauseAll").click(jQuery.proxy(this.pauseAll, this));
 	$("#deleteAll").click(jQuery.proxy(this.deleteAll, this));
@@ -164,9 +165,11 @@ $.extend(window.Ananke.controller.prototype, {
 			if(index) {
 				var item = items[index];
 				total += item.getElapsed();
-				var newElapsed = item.getHumanElapsed()
-				var target = tr.find("td.elapsed");
-				updaterFuct(newElapsed, target);
+				if(!tr.hasClass("over")) {
+					var newElapsed = item.getHumanElapsed()
+					var target = tr.find("td.elapsed");
+					updaterFuct(newElapsed, target);
+				}
 			}
 		});
 
@@ -234,7 +237,11 @@ input.empty { color: #CCC; }
 #newTaskLink input { width: 33%; margin: 0; padding: 0; }
 #newTaskLink label { display: inline-block; width: 33%; margin: 0; padding: 0; text-align: center; }
 
-#currentTasks { width: 100%; }
+#currentTasks { 
+	width: 100%;
+	border-collapse: collapse;
+} 
+
 #currentTasks tbody div.icon { 
 	height: 15px;
 	width: 15px;
@@ -249,6 +256,7 @@ input.empty { color: #CCC; }
 #currentTasks col.time { width: 30px; }
 #currentTasks col.actions { width: 35px; }
 #currentTasks tbody td.actions { text-align: center; }
+#currentTasks tbody tr.over { background-color: #eee; }
 
 #currentTasks div.icon.pause { background-position: 0 0; }
 #currentTasks div.icon.stop { background-position: 0 -15px; }
