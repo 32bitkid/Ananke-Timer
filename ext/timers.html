@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script type="text/javascript" src='jquery-1.5.min.js'></script>
-<script type="text/javascript" src='jquery.tmpl.min.js'></script>
-<script type="text/javascript" src='ananke.core.js'></script>
+<script type="text/javascript" src='js/jquery-1.5.min.js'></script>
+<script type="text/javascript" src='js/jquery-ui-1.8.9.custom.min.js'></script>
+<script type="text/javascript" src='js/jquery.tmpl.min.js'></script>
+<script type="text/javascript" src='js/ananke.core.js'></script>
 <script type="text/javascript">
 window.Ananke.controller = function(model) {
 	this.model = model;
@@ -22,6 +23,7 @@ window.Ananke.controller = function(model) {
 	$(".icon.stop").live("click", jQuery.proxy(this.handleStop, this));
 	$(".icon.pause").live("click", jQuery.proxy(this.handlePause, this));
 	$(".icon.link").live("click", jQuery.proxy(this.handleLink, this));
+	this.table.find("tr").live("mouseover", function() { $(this).addClass("over"); }).live("mouseout", function() { $(this).removeClass("over"); });
 
 	$("#pauseAll").click(jQuery.proxy(this.pauseAll, this));
 	$("#deleteAll").click(jQuery.proxy(this.deleteAll, this));
@@ -116,20 +118,20 @@ $.extend(window.Ananke.controller.prototype, {
 		this.taskName.val(tab.title).removeClass("empty").attr("readonly", "readonly");
 		this.taskURL.val(tab.url).removeClass("empty").attr("readonly", "readonly");	
 	},
-	updateForm: function() {
+	updateForm: function(e) {
 		var setting = this.getLinkSetting();
 		switch(setting) {
 			case "current":
 			chrome.tabs.getSelected(null, jQuery.proxy(this.handleGetSelected, this));
-			this.taskURL.hide();
+			this.taskURL.val("").filter(":visible").hide(e ? "blind" : undefined);
 			break;
 			case "none":
 			this.taskName.val("").blur().removeAttr("readonly");
-			this.taskURL.val("").hide();
+			this.taskURL.val("").filter(":visible").hide(e ? "blind" : undefined);
 			break;
 			case "manual":
 			this.taskName.val("").blur().removeAttr("readonly");
-			this.taskURL.val("").blur().removeAttr("readonly").show();
+			this.taskURL.val("").blur().removeAttr("readonly").filter(":hidden").show(e ? "blind" : undefined);
 			break;
 		}
 		window.Ananke.options.setLinkType(setting);
@@ -155,19 +157,26 @@ $.extend(window.Ananke.controller.prototype, {
 		var items = this.model.items;
 		var total = 0;
 
+		var updaterFuct = this._safeUpdateTime;
+
 		this.table.find("tr").each(function(i,e) {
 			var tr = $(e);
 			var index = tr.attr("data-item-index");
 			if(index) {
 				var item = items[index];
 				total += item.getElapsed();
-				var newElapsed = item.getHumanElapsed()
-				var target = tr.find("td.elapsed");
-				if(target.text() != newElapsed) target.text(newElapsed);
+				if(!tr.hasClass("over")) {
+					var newElapsed = item.getHumanElapsed()
+					var target = tr.find("td.elapsed");
+					updaterFuct(newElapsed, target);
+				}
 			}
 		});
 
-		this.totalTime.text(Ananke.Item.msToHumanTime(total));
+		updaterFuct(Ananke.Item.msToHumanTime(total), this.totalTime);
+	},
+	_safeUpdateTime: function(value, target) {
+		if(target.text() != value) target.text(value);
 	},
 	taskNameUpdate: function(e) { 
 		if(this.taskName.val())
@@ -228,7 +237,11 @@ input.empty { color: #CCC; }
 #newTaskLink input { width: 33%; margin: 0; padding: 0; }
 #newTaskLink label { display: inline-block; width: 33%; margin: 0; padding: 0; text-align: center; }
 
-#currentTasks { width: 100%; }
+#currentTasks { 
+	width: 100%;
+	border-collapse: collapse;
+} 
+
 #currentTasks tbody div.icon { 
 	height: 15px;
 	width: 15px;
@@ -243,6 +256,7 @@ input.empty { color: #CCC; }
 #currentTasks col.time { width: 30px; }
 #currentTasks col.actions { width: 35px; }
 #currentTasks tbody td.actions { text-align: center; }
+#currentTasks tbody tr.over { background-color: #eee; }
 
 #currentTasks div.icon.pause { background-position: 0 0; }
 #currentTasks div.icon.stop { background-position: 0 -15px; }
