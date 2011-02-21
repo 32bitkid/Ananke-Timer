@@ -138,7 +138,7 @@ $.extend(window.Ananke.TimerController.prototype, {
 	updateTable: function() {
 		this.table.find("tr").remove();
 		if(this.model.items.length == 0) {
-			this.table.append("<tr><td></td><td><em>None</em></td></tr>")
+			this.table.append("<tr><td></td><td colspan='3'><em>None</em></td></tr>")
 			return;
 		}
 		var running = 0;
