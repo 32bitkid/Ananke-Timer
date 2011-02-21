@@ -12,6 +12,7 @@ window.Ananke.TimerController = function(config) {
 	this.totalTime = this.config.totalTime;
 	this.taskTemplate = this.config.taskTemplate;
 	this.anankeOptions = this.config.anankeOptions;
+	this.itemClass = this.config.itemClass;
 
 	var linkSetting = this.anankeOptions.getLinkType();
 	this.taskLink.filter("*[value='"+linkSetting+"']").click();
@@ -103,7 +104,7 @@ $.extend(window.Ananke.TimerController.prototype, {
 
 		if(this.anankeOptions.getPauseOnCreate()) this.model.pauseAll();
 
-		this.model.appendItem(new window.Ananke.Item({
+		this.model.appendItem(new this.itemClass({
 			name: this.taskName.val(),
 			url: this.taskURL.val()
 		}))
@@ -170,7 +171,7 @@ $.extend(window.Ananke.TimerController.prototype, {
 			}
 		});
 
-		updaterFuct(Ananke.Item.msToHumanTime(total), this.totalTime);
+		updaterFuct(this.itemClass.msToHumanTime(total), this.totalTime);
 	},
 	_safeUpdateTime: function(value, target) {
 		if(target.text() != value) target.text(value);
