@@ -41,7 +41,7 @@ window.Ananke.TimerController = function(config) {
 	this.updateForm();
 	this.updateTable();
 
-	setInterval(jQuery.proxy(this.updateTimes, this), 1000);
+	this.interval = setInterval(jQuery.proxy(this.updateTimes, this), 1000);
 }
 
 window.Ananke.TimerController.templateHelpers = {
@@ -57,6 +57,9 @@ window.Ananke.TimerController.emptyNameText = "[Timer Name]"
 window.Ananke.TimerController.emptyURLText = "[URL]"
 
 $.extend(window.Ananke.TimerController.prototype, {
+	teardown: function() {
+		clearInterval(this.interval);	
+	},
 	handleLink: function(e) {
 		var index = $(e.currentTarget).closest("tr").index();
 		var item = this.model.getItem(index);
