@@ -61,17 +61,17 @@ $.extend(window.Ananke.TimerController.prototype, {
 		clearInterval(this.interval);	
 	},
 	handleLink: function(e) {
-		var index = $(e.currentTarget).closest("tr").index();
+		var index = $(e.currentTarget).closest("tr").attr("data-item-index");
 		var item = this.model.getItem(index);
 		chrome.tabs.create({url: item.url});
 	},
 	handleStop: function(e) {
-		var index = $(e.currentTarget).closest("tr").index();
+		var index = $(e.currentTarget).closest("tr").attr("data-item-index");
 		this.model.stopItem(index);
 		this.updateTable();
 	},
 	handlePause: function(e) {
-		var index = $(e.currentTarget).closest("tr").index();
+		var index = $(e.currentTarget).closest("tr").attr("data-item-index");
 		this.model.pauseItem(index);
 		this.updateTable();
 	},
