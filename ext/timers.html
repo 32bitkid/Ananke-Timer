@@ -5,206 +5,43 @@
 <script type="text/javascript" src='js/jquery-ui-1.8.9.custom.min.js'></script>
 <script type="text/javascript" src='js/jquery.tmpl.min.js'></script>
 <script type="text/javascript" src='js/ananke.core.js'></script>
+<script type="text/javascript" src='js/timer.controller.js'></script>
 <script type="text/javascript">
-window.Ananke.controller = function(model) {
-	this.model = model;
-
-	this.newTaskForm = $("#newTask");
-	this.taskLink = this.newTaskForm.find("input[name='linkBehavior']");
-	this.taskName = this.newTaskForm.find("input[name='name']");
-	this.taskURL = this.newTaskForm.find("input[name='url']");
-	this.table = $("#currentTasks tbody");
-	this.totalTime = $("#currentTasks tfoot td.total");
-	this.taskTemplate = $("#taskTemplate");
-
-	var setting = window.Ananke.options.getLinkType();
-	this.taskLink.filter("*[value='"+setting+"']").click();	
-
-	$(".icon.stop").live("click", jQuery.proxy(this.handleStop, this));
-	$(".icon.pause").live("click", jQuery.proxy(this.handlePause, this));
-	$(".icon.link").live("click", jQuery.proxy(this.handleLink, this));
-	this.table.find("tr").live("mouseover", function() { $(this).addClass("over"); }).live("mouseout", function() { $(this).removeClass("over"); });
-
-	$("#pauseAll").click(jQuery.proxy(this.pauseAll, this));
-	$("#deleteAll").click(jQuery.proxy(this.deleteAll, this));
-
-	this.taskLink
-		.click(jQuery.proxy(this.updateForm, this));
-
-	
-	this.taskName
-		.blur(jQuery.proxy(this.taskNameUpdate, this))
-		.focus(jQuery.proxy(this.taskNameFocused, this));
-
-	this.taskURL
-		.blur(jQuery.proxy(this.taskURLUpdate, this))
-		.focus(jQuery.proxy(this.taskURLFocused, this));		
-
-	this.newTaskForm.submit(jQuery.proxy(this.createNewTask, this));
-
-	this.updateForm();
-	this.updateTable();	
-
-	setInterval(jQuery.proxy(this.updateTimes, this), 1000);
-}
-
-window.Ananke.controller.templateHelpers = {
-	getSafeName: function() {
-		return (this.data.name.length < 30) ? this.data.name : this.data.name.substr(0,27).trim() + "..."
-	},
-	getStatus: function() {
-		return this.data.getStatus();
-	}
-}
-
-window.Ananke.controller.emptyNameText = "[Timer Name]"
-window.Ananke.controller.emptyURLText = "[URL]"
-
-$.extend(window.Ananke.controller.prototype, {
-	handleLink: function(e) {
-		var index = $(e.currentTarget).closest("tr").index();
-		var item = this.model.getItem(index);
-		chrome.tabs.create({url: item.url});
-	},
-	handleStop: function(e) {
-		var index = $(e.currentTarget).closest("tr").index();
-		this.model.stopItem(index);
-		this.updateTable();
-	},
-	handlePause: function(e) {
-		var index = $(e.currentTarget).closest("tr").index();
-		this.model.pauseItem(index);
-		this.updateTable();
-	},
-	pauseAll: function() {
-		this.model.pauseAll();
-		this.updateTable();
-	},
-	deleteAll: function() {
-		var response = confirm("Are you sure you want to delete all timers?");
-		if(!response) return;
-		this.model.stopAll();
-		this.updateTable();
-	},	
-	getLinkSetting: function() {
-		return this.taskLink.filter("*:checked").val();
-	}, 
-	createNewTask: function(e){ 
-		if(this.taskName.hasClass("empty"))
-		{
-			this.taskName.focus();
-			return false;
-		}
-
-		if(this.getLinkSetting() == "manual"
-			&& (this.taskURL.hasClass("empty")
-				|| !(/^(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(([0-9]{1,5})?\/.*)?$/ix).test(this.taskURL.val())))
-		{
-			this.taskURL.focus();
-			return false;
-		}
-
-		if(window.Ananke.options.getPauseOnCreate()) this.model.pauseAll();
-
-		this.model.appendItem(new window.Ananke.Item({
-			name: this.taskName.val(),
-			url: this.taskURL.val()
-		}))
-
-		this.updateTable();
-		return false;
-	},
-	handleGetSelected: function(tab) {
-		this.taskName.val(tab.title).removeClass("empty").attr("readonly", "readonly");
-		this.taskURL.val(tab.url).removeClass("empty").attr("readonly", "readonly");	
-	},
-	updateForm: function(e) {
-		var setting = this.getLinkSetting();
-		switch(setting) {
-			case "current":
-			chrome.tabs.getSelected(null, jQuery.proxy(this.handleGetSelected, this));
-			this.taskURL.val("").filter(":visible").hide(e ? "blind" : undefined);
-			break;
-			case "none":
-			this.taskName.val("").blur().removeAttr("readonly");
-			this.taskURL.val("").filter(":visible").hide(e ? "blind" : undefined);
-			break;
-			case "manual":
-			this.taskName.val("").blur().removeAttr("readonly");
-			this.taskURL.val("").blur().removeAttr("readonly").filter(":hidden").show(e ? "blind" : undefined);
-			break;
-		}
-		window.Ananke.options.setLinkType(setting);
-	},
-	updateTable: function() {
-		this.table.find("tr").remove();
-		if(this.model.items.length == 0) {
-			this.table.append("<tr><td></td><td><em>None</em></td></tr>")
-			return;
-		}
-		var running = 0;
-		for(var i = 0; i < this.model.items.length; i++) {
-			var item = this.model.items[i];
-			if (item.isPaused == false) running++;
-			this.taskTemplate.tmpl(item, this.constructor.templateHelpers).appendTo(this.table).attr("data-item-index", i);
-		}
-
-		window.Ananke.updateBadge(running);
-		this.updateTimes();
-
-	},
-	updateTimes: function() {
-		var items = this.model.items;
-		var total = 0;
-
-		var updaterFuct = this._safeUpdateTime;
-
-		this.table.find("tr").each(function(i,e) {
-			var tr = $(e);
-			var index = tr.attr("data-item-index");
-			if(index) {
-				var item = items[index];
-				total += item.getElapsed();
-				if(!tr.hasClass("over")) {
-					var newElapsed = item.getHumanElapsed()
-					var target = tr.find("td.elapsed");
-					updaterFuct(newElapsed, target);
-				}
-			}
-		});
-
-		updaterFuct(Ananke.Item.msToHumanTime(total), this.totalTime);
-	},
-	_safeUpdateTime: function(value, target) {
-		if(target.text() != value) target.text(value);
-	},
-	taskNameUpdate: function(e) { 
-		if(this.taskName.val())
-			this.taskName.removeClass("empty");
-		else 
-			this.taskName.addClass("empty").val(this.constructor.emptyNameText);
-	},
-	taskURLUpdate: function(e) { 
-		if(this.taskURL.val())
-			this.taskURL.removeClass("empty");
-		else 
-			this.taskURL.addClass("empty").val(this.constructor.emptyURLText);
-	},
-	taskNameFocused: function(e) {
-		if(this.taskName.hasClass("empty"))
-			this.taskName.removeClass("empty").val("");
-	},
-	taskURLFocused: function(e) {
-		if(this.taskURL.hasClass("empty"))
-			this.taskURL.removeClass("empty").val("");
-	}	
-});
-
-$(function() { 
+$(function() {
 	var model = new window.Ananke.ItemsRepository("Ananke.items");
-	var controller = new window.Ananke.controller(model);
-})
+	var newTaskForm = $("#newTask");
+	var config = {
+		// DAO
+		model: model,
 
+		// New Task
+		newTaskForm:  newTaskForm,
+		taskLink: newTaskForm.find("input[name='linkBehavior']"),
+		taskName: newTaskForm.find("input[name='name']"),
+		taskURL: newTaskForm.find("input[name='url']"),
+
+		// Current Tasks Table
+		table: $("#currentTasks tbody"),
+		totalTime: $("#currentTasks tfoot td.total"),
+
+		// Task Template
+		taskTemplate: $("#taskTemplate"),
+
+		// Control Buttons
+		pauseAllButton: $("#pauseAll"),
+		deleteAllButton: $("#deleteAll"),
+		stopIcons: $(".icon.stop"),
+		pauseIcons: $(".icon.pause"),
+		linkIcons: $(".icon.link"),
+
+		// Options
+		anankeOptions: window.Ananke.options
+	}
+
+
+
+	var controller = new window.Ananke.TimerController(config);
+})
 </script>
 <script id="taskTemplate" type="text/x-jquery-tmpl">
 	<tr class="${$item.getStatus()}">
@@ -227,7 +64,7 @@ $(function() {
 <style>
 input.empty { color: #CCC; }
 
-#newTaskName input[type='text'], #newTaskUrl input[type='text'] { 
+#newTaskName input[type='text'], #newTaskUrl input[type='text'] {
 	width: 260px;
 	text-align: baseline;
 	padding: 0.5ex;
@@ -237,12 +74,12 @@ input.empty { color: #CCC; }
 #newTaskLink input { width: 33%; margin: 0; padding: 0; }
 #newTaskLink label { display: inline-block; width: 33%; margin: 0; padding: 0; text-align: center; }
 
-#currentTasks { 
+#currentTasks {
 	width: 100%;
 	border-collapse: collapse;
-} 
+}
 
-#currentTasks tbody div.icon { 
+#currentTasks tbody div.icon {
 	height: 15px;
 	width: 15px;
 	display: inline-block;
@@ -278,7 +115,7 @@ tfoot { color: #999; }
 		<section>
 			<header>Create New Timer</header>
 			<details>
-				
+
 					<ul>
 						<li id="newTaskName"><input type="text" name="name" class="empty" /></li>
 						<li id="newTaskUrl"><input type="text" name="url" class="empty" /></li>
@@ -287,7 +124,7 @@ tfoot { color: #999; }
 							<label for="taskLinkNone">None</label><label for="taskLinkCurrent">Current Tab</label><label for="taskLinkManual">Manual</label>
 						</li>
 					</ul>
-				
+
 			</details>
 		</section>
 		<ul class="buttonList"><li><button type="submit">Start</button></li></ul>
@@ -306,7 +143,7 @@ tfoot { color: #999; }
 				</tfoot>
 			</table>
 		</details>
-	</section>	
+	</section>
 
 	<ul class="buttonList">
 		<li><button id="pauseAll">Pause All</button></li>
