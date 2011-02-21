@@ -4,7 +4,6 @@ window.Ananke.TimerController = function(config) {
 
 	this.model = this.config.model;
 	this.newTaskForm = this.config.newTaskForm;
-	this.newTaskForm = this.config.newTaskForm;
 	this.taskLink = this.config.taskLink;
 	this.taskName = this.config.taskName;
 	this.taskURL = this.config.taskURL;
@@ -20,7 +19,6 @@ window.Ananke.TimerController = function(config) {
 	this.config.stopIcons.live("click", jQuery.proxy(this.handleStop, this));
 	this.config.pauseIcons.live("click", jQuery.proxy(this.handlePause, this));
 	this.config.linkIcons.live("click", jQuery.proxy(this.handleLink, this));
-
 	this.table.find("tr").live("mouseover", function() { $(this).addClass("over"); }).live("mouseout", function() { $(this).removeClass("over"); });
 
 	this.config.pauseAllButton.click(jQuery.proxy(this.pauseAll, this));
