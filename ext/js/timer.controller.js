@@ -137,16 +137,15 @@ $.extend(window.Ananke.TimerController.prototype, {
 	},
 	updateTable: function() {
 		this.table.find("tr").remove();
-		if(this.model.items.length == 0) {
-			this.table.append("<tr><td></td><td colspan='3'><em>None</em></td></tr>")
-			return;
-		}
+		
 		var running = 0;
 		for(var i = 0; i < this.model.items.length; i++) {
 			var item = this.model.items[i];
 			if (item.isPaused == false) running++;
 			this.taskTemplate.tmpl(item, this.constructor.templateHelpers).appendTo(this.table).attr("data-item-index", i);
 		}
+
+		if(i == 0) this.table.append("<tr><td></td><td colspan='3'><em>None</em></td></tr>");
 
 		window.Ananke.updateBadge(running);
 		this.updateTimes();
