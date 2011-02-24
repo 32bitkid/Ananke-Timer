@@ -37,6 +37,7 @@ $(document).ready(function() {
 				taskLink: $("<input name='link' type='radio' value='none'><input name='link' type='radio' value='current'><input name='link' type='radio' value='manual'>"),
 				stopIcons: $("<div>"),
 				pauseIcons: $("<div>"),
+				deleteIcons: $("<div>"),
 				linkIcons: $("<div>"),
 				table: $("<tbody>"),
 				pauseAllButton: $("<div>"),

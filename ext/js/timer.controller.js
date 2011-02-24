@@ -17,6 +17,7 @@ window.Ananke.TimerController = function(config) {
 	this.taskLink.filter("*[value='"+linkSetting+"']").click();
 
 	this.config.stopIcons.live("click", jQuery.proxy(this.handleStop, this));
+	this.config.deleteIcons.live("click", jQuery.proxy(this.handleDelete, this));
 	this.config.pauseIcons.live("click", jQuery.proxy(this.handlePause, this));
 	this.config.linkIcons.live("click", jQuery.proxy(this.handleLink, this));
 	this.table.find("tr").live("mouseover", function() { $(this).addClass("over"); }).live("mouseout", function() { $(this).removeClass("over"); });
@@ -68,6 +69,11 @@ $.extend(window.Ananke.TimerController.prototype, {
 	handleStop: function(e) {
 		var index = $(e.currentTarget).closest("tr").attr("data-item-index");
 		this.model.stopItem(index);
+		this.updateTable();
+	},
+	handleDelete: function(e) {
+		var index = $(e.currentTarget).closest("tr").attr("data-item-index");
+		this.model.deleteItem(index);
 		this.updateTable();
 	},
 	handlePause: function(e) {

@@ -19,7 +19,7 @@ window.Ananke.updateBadge = function(running) {
 			break;
 		case Ananke.options.badgeSettings.showOnNoneRunning:
 			chrome.browserAction.setBadgeText({text: (running == 0) ? running.toString() : "" });
-			break;			
+			break;
 		default:
 			chrome.browserAction.setBadgeText({text:""});
 	}
@@ -52,7 +52,7 @@ $.extend(window.Ananke.ItemsRepository.prototype, {
 				this.items[i] = new window.Ananke.Item(items[i]);
 			}
 		}
-	}, 
+	},
 	getItem: function(i) {
 		return this.items[i];
 	},
@@ -61,12 +61,16 @@ $.extend(window.Ananke.ItemsRepository.prototype, {
 		this.save();
 	},
 	stopItem: function(i) {
-		this.items.splice(i,1);
-		this.save();	
+		this.items[i].stop()
+		this.save();
 	},
-	stopAll: function(i) {
+	deleteItem: function(i) {
+		this.items.splice(i,1);
+		this.save();
+	},
+	deleteAll: function(i) {
 		this.items = []
-		this.save();		
+		this.save();
 	},
 	pauseItem: function(i) {
 		this.items[i].pause();
@@ -78,7 +82,7 @@ $.extend(window.Ananke.ItemsRepository.prototype, {
 				this.items[i].pause();
 			}
 		}
-		this.save();	
+		this.save();
 	},
 	save: function() {
 		var raw = JSON.stringify(this.items);
@@ -90,56 +94,3 @@ $.extend(window.Ananke.ItemsRepository.prototype, {
 		this.save();
 	}
 });
-
-window.Ananke.Item = function(obj) {
-	this.name = "";
-	this.url = "";
-	this.startTime = new Date();
-	this.isPaused = false;
-	this.pausedTime = 0;
-	this.hasLink = false;
-	if(obj) {
-		for(var i in obj) this[i] = obj[i];
-		this.startTime = new Date(this.startTime);
-		if(this.isPaused) this.isPaused = new Date(this.isPaused);
-		if(this.url) this.hasLink = true;
-	}
-}
-
-window.Ananke.Item.msToHumanTime = function(ms) {
-	var hours = ms / 1000 / 60 / 60;		
-	if (hours > 1) return Math.round(hours*10)/10 + "h";
-	var minutes = ms / 1000 / 60;
-	if (minutes > 15) return Math.round(minutes/15)*15 + "m";
-	if (minutes > 1) return Math.round(minutes) + "m";
-	var seconds = ms / 1000;
-	return Math.round(seconds) + "s";
-}
-
-$.extend(window.Ananke.Item.prototype, {
-	getElapsed: function() {
-		var now = new Date();
-		var ms = (now - this.startTime);
-		if(this.isPaused) ms -= (now - this.isPaused);
-		ms -= this.pausedTime;
-
-		return ms;
-	}, 	
-	getHumanElapsed: function() {
-		var ms = this.getElapsed();
-		return this.constructor.msToHumanTime(ms);
-	}, 
-	pause: function() {
-		if(this.isPaused) {
-			this.pausedTime += new Date() - this.isPaused;
-			this.isPaused = false;
-		} else {
-			this.isPaused = new Date();
-		}
-	},
-	getStatus: function() {
-		var status = []
-		if(this.isPaused) status.push("paused");
-		return status.join(" ");
-	}
-})

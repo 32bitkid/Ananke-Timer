@@ -5,6 +5,7 @@
 <script type="text/javascript" src='js/jquery-ui-1.8.9.custom.min.js'></script>
 <script type="text/javascript" src='js/jquery.tmpl.min.js'></script>
 <script type="text/javascript" src='js/ananke.core.js'></script>
+<script type="text/javascript" src='js/ananke.item.js'></script>
 <script type="text/javascript" src='js/timer.controller.js'></script>
 <script type="text/javascript">
 $(function() {
@@ -30,7 +31,9 @@ $(function() {
 		// Control Buttons
 		pauseAllButton: $("#pauseAll"),
 		deleteAllButton: $("#deleteAll"),
+
 		stopIcons: $(".icon.stop"),
+		deleteIcons: $(".icon.delete"),
 		pauseIcons: $(".icon.pause"),
 		linkIcons: $(".icon.link"),
 
@@ -59,6 +62,7 @@ $(function() {
    		<td class="actions">
    			<div class="pause icon"></div>
    			<div class="stop icon"></div>
+   			<div class="delete icon"></div>
    		</td>
 	</tr>
 </script>
@@ -98,10 +102,17 @@ input.empty { color: #CCC; }
 #currentTasks tbody tr.over { background-color: #eee; }
 
 #currentTasks div.icon.pause { background-position: 0 0; }
-#currentTasks div.icon.stop { background-position: 0 -15px; }
+#currentTasks div.icon.stop { background-position: -30px 0; }
+#currentTasks div.icon.delete { background-position: 0 -15px; }
 #currentTasks div.icon.link { background-position: -15px -15px; }
 #currentTasks div.icon.paste { outline: 1px solid red; }
+
 #currentTasks tr.paused div.icon.pause { background-position: -15px 0; }
+#currentTasks tr div.icon.delete { display: none; }
+
+#currentTasks tr.stopped div.icon.pause,
+#currentTasks tr.stopped div.icon.stop { display: none; }
+#currentTasks tr.stopped div.icon.delete { display: inline-block; }
 
 #newTask form li { margin: 0.5ex 0; }
 ul.buttonList { text-align: right; margin-bottom: 1em; }
