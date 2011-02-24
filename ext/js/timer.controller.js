@@ -58,7 +58,7 @@ window.Ananke.TimerController.emptyURLText = "[URL]"
 
 $.extend(window.Ananke.TimerController.prototype, {
 	teardown: function() {
-		clearInterval(this.interval);	
+		clearInterval(this.interval);
 	},
 	handleLink: function(e) {
 		var index = $(e.currentTarget).closest("tr").attr("data-item-index");
@@ -137,7 +137,7 @@ $.extend(window.Ananke.TimerController.prototype, {
 	},
 	updateTable: function() {
 		this.table.find("tr").remove();
-		
+
 		var running = 0;
 		for(var i = 0; i < this.model.items.length; i++) {
 			var item = this.model.items[i];
@@ -147,7 +147,7 @@ $.extend(window.Ananke.TimerController.prototype, {
 
 		if(i == 0) this.table.append("<tr><td></td><td colspan='3'><em>None</em></td></tr>");
 
-		window.Ananke.updateBadge(running);
+		if(this.config.badgeUpdater) this.config.badgeUpdater(running);
 		this.updateTimes();
 
 	},
@@ -170,7 +170,6 @@ $.extend(window.Ananke.TimerController.prototype, {
 				}
 			}
 		});
-
 		updaterFuct(this.itemClass.msToHumanTime(total), this.totalTime);
 	},
 	_safeUpdateTime: function(value, target) {

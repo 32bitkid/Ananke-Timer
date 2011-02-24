@@ -31,7 +31,7 @@ $(document).ready(function() {
 	})
 
 	module(core + "Testing Buttons", {
-		setup: function() { 
+		setup: function() {
 			this.defaultConfig = {
 				model: { items: [] },
 				taskLink: $("<input name='link' type='radio' value='none'><input name='link' type='radio' value='current'><input name='link' type='radio' value='manual'>"),
@@ -41,6 +41,7 @@ $(document).ready(function() {
 				table: $("<tbody>"),
 				pauseAllButton: $("<div>"),
 				deleteAllButton: $("<div>"),
+				totalTime: $("div"),
 				taskName: $("<input>"),
 				taskURL: $("<input>"),
 				newTaskForm: $("<form>"),
@@ -50,7 +51,7 @@ $(document).ready(function() {
 					setLinkType: function() {},
 					getPauseOnCreate: function() {}
 				}
-				
+
 			}
 			this.defaultConfig.itemClass.msToHumanTime = function() {}
 		}
@@ -78,7 +79,7 @@ $(document).ready(function() {
 
 		// Restore Confirm
 		confirm = oldConfirm;
-	})	
+	})
 
 	test("I accidentally click to delete all timers", function() {
 		// Override confirm
@@ -94,11 +95,11 @@ $(document).ready(function() {
 
 		// Restore Confirm
 		confirm = oldConfirm;
-	})		
+	})
 
 	test("I want to create a new unlinked timer", function() {
 		expect(4)
-		
+
 		this.defaultConfig.taskName.focus(function() { ok(false, "Should not have gotten focus"); })
 
 		this.defaultConfig.itemClass = function(obj) {
@@ -106,6 +107,7 @@ $(document).ready(function() {
 			equals(obj.name, "Test", "Name correctly set")
 			equals(obj.url, "", "URL is blank")
 		}
+		this.defaultConfig.itemClass.msToHumanTime = function() {};
 
 		this.defaultConfig.model.appendItem = function(timer) {
 			ok(true, "Appending a new item");
@@ -116,7 +118,7 @@ $(document).ready(function() {
 		this.defaultConfig.taskName.val("Test").blur();
 		this.defaultConfig.newTaskForm.submit();
 		controller.teardown();
-	})	
+	})
 
 	test("I have forgotten to put in a name in an unlinked timer", function() {
 		expect(1);
@@ -127,6 +129,7 @@ $(document).ready(function() {
 		this.defaultConfig.itemClass = function(obj) {
 			ok(false, "A new Item should not be created")
 		}
+		this.defaultConfig.itemClass.msToHumanTime = function() {};
 
 		this.defaultConfig.model.appendItem = function(timer) {
 			ok(false, "Nothing should be appended");
@@ -151,6 +154,7 @@ $(document).ready(function() {
 			equals(obj.name, "Google", "Name is correct")
 			equals(obj.url, "http://google.com", "URL is correct")
 		}
+		this.defaultConfig.itemClass.msToHumanTime = function() {};
 
 		this.defaultConfig.model.appendItem = function(timer) {
 			ok(true, "Nothing should be appended");
@@ -174,6 +178,7 @@ $(document).ready(function() {
 		this.defaultConfig.itemClass = function(obj) {
 			ok(false, "No item should be created")
 		}
+		this.defaultConfig.itemClass.msToHumanTime = function() {};
 
 		this.defaultConfig.model.appendItem = function(timer) {
 			ok(false, "No timer should be appended");
@@ -186,7 +191,7 @@ $(document).ready(function() {
 		this.defaultConfig.newTaskForm.submit();
 		controller.teardown();
 	})
-	
+
 	test("I want to create a manual timer with a bad link", function() {
 		expect(1);
 
@@ -197,6 +202,7 @@ $(document).ready(function() {
 		this.defaultConfig.itemClass = function(obj) {
 			ok(false, "No item should be created")
 		}
+		this.defaultConfig.itemClass.msToHumanTime = function() {};
 
 		this.defaultConfig.model.appendItem = function(timer) {
 			ok(false, "No timer should be appended");
@@ -208,7 +214,7 @@ $(document).ready(function() {
 		this.defaultConfig.taskURL.val("garbage").blur();
 		this.defaultConfig.newTaskForm.submit();
 		controller.teardown();
-	})			
+	})
 
 	test("I want to create a manual timer", function() {
 		expect(4);
@@ -222,6 +228,7 @@ $(document).ready(function() {
 			equals(obj.name, "Google", "Name is correct")
 			equals(obj.url, "http://google.com", "URL is correct")
 		}
+		this.defaultConfig.itemClass.msToHumanTime = function() {};
 
 		this.defaultConfig.model.appendItem = function(timer) {
 			ok(true, "A timer should be appended");
@@ -233,7 +240,7 @@ $(document).ready(function() {
 		this.defaultConfig.taskURL.val("http://google.com").blur();
 		this.defaultConfig.newTaskForm.submit();
 		controller.teardown();
-	})		
+	})
 
 
 })
