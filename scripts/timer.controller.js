@@ -103,7 +103,7 @@ $.extend(window.Ananke.TimerController.prototype, {
 
 		if(this.getLinkSetting() == "manual"
 			&& (this.taskURL.hasClass("empty")
-				|| !(/^(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(([0-9]{1,5})?\/.*)?$/ix).test(this.taskURL.val())))
+				|| !(/^(http|https):\/\/[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(([0-9]{1,5})?\/.*)?$/i).test(this.taskURL.val())))
 		{
 			this.taskURL.focus();
 			return false;

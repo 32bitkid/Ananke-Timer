@@ -1,0 +1,18 @@
+task :default => [:minify] do
+
+end
+
+task :minify do
+	scripts = [
+		"scripts/jquery-1.5.min.js", 
+		"scripts/jquery-ui-1.8.9.custom.min.js", 
+		"scripts/jquery.tmpl.min.js", 
+		"scripts/ananke.core.js", 
+		"scripts/ananke.item.js", 
+		"scripts/ananke.repos.js",
+		"scripts/timer.controller.js"
+	]
+	input = scripts.collect { |x| "--js #{x}"}.join(" ")
+	output = "--js_output_file ext/ananke.min.js"
+	`java -jar tools/compiler.jar #{input} #{output}`
+end
