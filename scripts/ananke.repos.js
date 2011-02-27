@@ -58,3 +58,58 @@ $.extend(window.Ananke.ItemsRepository.prototype, {
 		this.save();
 	}
 });
+
+//  Ananke History
+window.Ananke.HistoryRespository = function(obj, key) {
+	this.obj = obj;
+	this.key = key;
+	this.update();
+}
+
+$.extend(Number.prototype, {
+	zeroPad: function(length) {
+		var zp = this.toString() + '';
+		while(zp.length < length) zp = "0" + zp;
+		return zp
+	}
+})
+
+$.extend(Date.prototype, {
+	toKey: function() {
+		return this.getFullYear().toString() + this.getMonth().zeroPad(2) + this.getDate().zeroPad(2);
+	}
+})
+
+$.extend(window.Ananke.HistoryRespository.prototype, {
+	repo: function() {
+		return this.obj[key];
+	},
+	update: function() {
+		var rawItems = this.obj[this.key]
+		this.history = {};
+		if(rawItems) {
+			var history = JSON.parse(rawItems);
+			for(var date in history)
+				for(var item in date) {
+					this.history[date][item] = new window.Ananke.Item(history[date][item]);
+				}
+		}
+	},
+	save: function() {
+		var raw = JSON.stringify(this.history);
+		this.obj[this.key] = raw;
+	},
+	add: function() {
+		for(var i = 0; i < arguments.length; i++) {
+			var item = arguments[i];
+			var target = this.history[item.startTime.toKey()]
+			if(!target) target = this.history[item.startTime.toKey()] = []
+
+			target.push(arguments[i]);
+		}
+		this.save();
+	},
+	getFrom: function(date) {
+		return this.history[date.toKey()];
+	}
+})
