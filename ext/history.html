@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>History</title>
+<script type="text/javascript" src='ananke.min.js'></script>
+<script type="text/javascript">
+Date.prototype.getHumanTime = function() {
+	var hours = this.getHours() + 1
+	var pm = (hours >= 12)
+	if(pm) hours -= 12
+
+	var minutes = this.getMinutes();
+	if(minutes < 10) minutes = "0" + minutes;
+	return hours+":"+minutes + " " + ((pm)?"pm":"am");
+
+}
+
+$(document).ready(function() {
+	var historyRepo = new window.Ananke.HistoryRespository(localStorage, "Ananke.history")
+
+	var dates = historyRepo.availableDates();
+	$("#currentDay").text(dates[0].toDateString());
+
+	var archivedItems = historyRepo.getFrom(dates[0]);
+
+	var table = $("#taskHistory tbody")
+	for(var i = 0; i < archivedItems.length; i++) {
+		$("#historyTemplate").tmpl(archivedItems[i], {
+			startTime: function() {
+				return this.data.startTime.getHumanTime();
+			},
+			endTime: function() {
+				if(!this.data.isStopped) return "&mdash;"
+				return this.data.isStopped.getHumanTime();
+			},
+			breakTime: function() {
+				return this.data.getBreakTime();
+			},
+			totalDuration: function() {
+				return this.data.getHumanElapsed();
+			}
+		}).appendTo(table);
+	}
+})
+</script>
+<link href="style.css" rel="stylesheet" type="text/css">
+<style>
+section.history header {
+	height: 28px; 
+	text-align: center;
+	position: relative; 
+}
+
+section.history header .prev,
+section.history header .next {
+	position: absolute;
+	top: 6px;
+}
+
+section.history header div.prev { left: 1em; }
+section.history header div.next { right: 1em; }
+section.history header span { line-height: 28px; }
+
+#taskHistory { width: 100%; }
+#taskHistory td.time { text-align: center; }
+
+#taskHistory col.time { width: 7em; }
+</style>
+<script id="historyTemplate" type="text/x-jquery-tmpl">
+<tr>
+	<td>${name}</td>
+	<td><a href="${url}">${url}</a></td>
+	<td class="time">${$item.startTime()}</td>
+	<td class="time">${$item.breakTime()}</td>
+	<td class="time">${$item.endTime()}</td>
+	<td class="time">${$item.totalDuration()}</td>
+</tr>
+</script>
+</head>
+<body>
+	<section class="history">
+		<header>
+			<div class="prev"><button>&laquo;</button></div>
+			<span id="currentDay"></span>
+			<div class="next"><button>&raquo;</button></div>
+		</header>
+		<details>
+			<table id="taskHistory">
+				<col class="name" /><col class="link" />
+				<col class="time" /><col class="time" />
+				<col class="time" /><col class="time" />
+				<thead>
+					<th>Name</th>
+					<th>Link</th>
+					<th>Start</th>
+					<th>Break</th>
+					<th>End</th>
+					<th>Total</th>
+				</thead>
+				<tbody></tbody>
+				<tfoot>
+				<tr>
+				<td>Total</td>
+				</tr>
+				</tfoot>
+			</table>
+		</details>
+	</section>
+</body>
+</html>

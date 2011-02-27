@@ -39,6 +39,9 @@ $.extend(window.Ananke.Item.prototype, {
 		var ms = this.getElapsed();
 		return this.constructor.msToHumanTime(ms);
 	},
+	getBreakTime: function() {
+		return this.constructor.msToHumanTime(this.pausedTime);
+	},
 	pause: function() {
 		if(this.isPaused) {
 			this.pausedTime += new Date() - this.isPaused;
@@ -48,7 +51,7 @@ $.extend(window.Ananke.Item.prototype, {
 		}
 	},
 	stop: function() {
-		this.isPaused = false;
+		if(this.isPaused) this.pause();
 		this.isStopped = new Date();
 	},
 	getStatus: function() {

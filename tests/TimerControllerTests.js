@@ -43,6 +43,7 @@ $(document).ready(function() {
 				table: $("<table>"),
 				pauseAllButton: $("<div>"),
 				deleteAllButton: $("<div>"),
+				historyButton: $("<div>"),
 				totalTime: $("div"),
 				taskName: $("<input>"),
 				taskURL: $("<input>"),

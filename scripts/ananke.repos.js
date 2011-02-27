@@ -68,20 +68,6 @@ window.Ananke.HistoryRespository = function(obj, key) {
 	this.update();
 }
 
-$.extend(Number.prototype, {
-	zeroPad: function(length) {
-		var zp = this.toString() + '';
-		while(zp.length < length) zp = "0" + zp;
-		return zp
-	}
-})
-
-$.extend(Date.prototype, {
-	toKey: function() {
-		return this.getFullYear().toString() + this.getMonth().zeroPad(2) + this.getDate().zeroPad(2);
-	}
-})
-
 $.extend(window.Ananke.HistoryRespository.prototype, {
 	repo: function() {
 		return this.obj[key];
@@ -91,11 +77,12 @@ $.extend(window.Ananke.HistoryRespository.prototype, {
 		this.history = {};
 		if(rawItems) {
 			var history = JSON.parse(rawItems);
-			for(var date in history)
-				for(var item in date) {
+			for(var date in history) {
+				for(var item = 0; item < history[date].length;  item++) {
 					if(!this.history[date]) this.history[date] = [];
 					this.history[date][item] = new window.Ananke.Item(history[date][item]);
 				}
+			}
 		}
 	},
 	save: function() {
@@ -105,14 +92,24 @@ $.extend(window.Ananke.HistoryRespository.prototype, {
 	add: function() {
 		for(var i = 0; i < arguments.length; i++) {
 			var item = arguments[i];
-			var target = this.history[item.startTime.toKey()]
-			if(!target) target = this.history[item.startTime.toKey()] = []
+			var target = this.history[item.startTime.toDateString()]
+			if(!target) target = this.history[item.startTime.toDateString()] = []
 
 			target.push(arguments[i]);
 		}
 		this.save();
 	},
 	getFrom: function(date) {
-		return this.history[date.toKey()];
+		return this.history[date.toDateString()];
+	},
+	availableDates: function() {
+		var dates = []
+		for(var key in this.history) {
+			dates.push(new Date(key));
+		}
+
+		dates.sort(function(a,b){ return b.getTime() - a.getTime(); });
+
+		return dates;
 	}
 })

@@ -28,6 +28,7 @@ $(function() {
 		// Control Buttons
 		pauseAllButton: $("#pauseAll"),
 		deleteAllButton: $("#deleteAll"),
+		historyButton: $("#history"),
 
 		stopIcons: $(".icon.stop"),
 		deleteIcons: $(".icon.delete"),
@@ -50,7 +51,7 @@ $(function() {
 		<td>
 			{{if hasLink}}
    			<div class="link icon"></div>
-   			{{/if}}
+   		{{/if}}
 		</td>
    		<td class="name" title="${name}">
    			${$item.getSafeName()}
@@ -115,6 +116,8 @@ input.empty { color: #CCC; }
 ul.buttonList { text-align: right; margin-bottom: 1em; }
 ul.buttonList li { display: inline; }
 
+#extras { text-align: center; }
+
 tfoot { color: #999; }
 
 </style>
@@ -155,8 +158,8 @@ tfoot { color: #999; }
 		</details>
 	</section>
 
-	<ul class="buttonList">
-		<li><a href="history.html">View History</a></li>
+	<ul class="buttonList" id="extras">
+		<li><button id="history">History</button></li>
 		<li><button id="pauseAll">Pause All</button></li>
 		<li><button id="deleteAll">Delete All</button></li>
 	</ul>

@@ -22,10 +22,12 @@ window.Ananke.TimerController = function(config) {
 	this.config.deleteIcons.live("click", jQuery.proxy(this.handleDelete, this));
 	this.config.pauseIcons.live("click", jQuery.proxy(this.handlePause, this));
 	this.config.linkIcons.live("click", jQuery.proxy(this.handleLink, this));
+
 	this.table.find("tr").live("mouseover", function() { $(this).addClass("over"); }).live("mouseout", function() { $(this).removeClass("over"); });
 
 	this.config.pauseAllButton.click(jQuery.proxy(this.pauseAll, this));
 	this.config.deleteAllButton.click(jQuery.proxy(this.deleteAll, this));
+	this.config.historyButton.click(jQuery.proxy(this.viewHistory, this));
 
 	this.taskLink
 		.click(jQuery.proxy(this.updateForm, this));
@@ -67,6 +69,9 @@ $.extend(window.Ananke.TimerController.prototype, {
 		var index = $(e.currentTarget).closest("tr").attr("data-item-index");
 		var item = this.model.getItem(index);
 		chrome.tabs.create({url: item.url});
+	},
+	viewHistory: function(e) { 
+		chrome.tabs.create({url: "history.html" });
 	},
 	handleStop: function(e) {
 		var index = $(e.currentTarget).closest("tr").attr("data-item-index");

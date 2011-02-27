@@ -56,3 +56,11 @@ button:active {
 	border-color: #268;
 	-webkit-box-shadow: 1px 0px 1px #999;
 }
+
+section header button {
+	-webkit-box-shadow: 2px 2px 4px #335;
+}
+
+section header button:active {
+	-webkit-box-shadow: 1px 0px 1px #335;
+}
