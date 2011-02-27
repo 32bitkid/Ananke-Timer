@@ -1,5 +1,5 @@
 $(document).ready(function() {
-	core = "Item &mdash; "
+	core = "Item - "
 
 	module(core + "Static Template Helpers");
 
@@ -36,5 +36,4 @@ $(document).ready(function() {
 		ok(i.isStopped);
 		equal(i.getStatus(), "stopped");
 	});
-
 })

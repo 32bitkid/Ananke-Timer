@@ -12,7 +12,7 @@ $(document).ready(function() {
 		equals((1).zeroPad(2), "01")
 	})
 
-	var core = "History &mdash; "
+	var core = "History - "
 
 	module(core + "Instance Methods", {
 		setup: function() {

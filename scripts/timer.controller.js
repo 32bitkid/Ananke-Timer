@@ -3,6 +3,8 @@ window.Ananke.TimerController = function(config) {
 	this.config = config;
 
 	this.model = this.config.model;
+	this.historyRepo = this.config.historyRepo;
+
 	this.newTaskForm = this.config.newTaskForm;
 	this.taskLink = this.config.taskLink;
 	this.taskName = this.config.taskName;
@@ -68,12 +70,14 @@ $.extend(window.Ananke.TimerController.prototype, {
 	},
 	handleStop: function(e) {
 		var index = $(e.currentTarget).closest("tr").attr("data-item-index");
-		this.model.stopItem(index);
+		var stoppedItem = this.model.stopItem(index);
+		
 		this.updateTable();
 	},
 	handleDelete: function(e) {
 		var index = $(e.currentTarget).closest("tr").attr("data-item-index");
-		this.model.deleteItem(index);
+		var removedItem = this.model.deleteItem(index);
+		this.historyRepo.add.apply(this.historyRepo, removedItem);
 		this.updateTable();
 	},
 	handlePause: function(e) {
@@ -142,7 +146,7 @@ $.extend(window.Ananke.TimerController.prototype, {
 		this.anankeOptions.setLinkType(setting);
 	},
 	updateTable: function() {
-		this.table.find("tr").remove();
+		this.table.children().remove();
 
 		var running = 0;
 		for(var i = 0; i < this.model.items.length; i++) {

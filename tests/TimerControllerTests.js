@@ -1,5 +1,5 @@
 $(document).ready(function() {
-	core = "Timer Controller Tests &mdash; "
+	core = "Timer Controller Tests -"
 
 	module(core + "Static Template Helpers");
 
@@ -34,12 +34,13 @@ $(document).ready(function() {
 		setup: function() {
 			this.defaultConfig = {
 				model: { items: [] },
+				taskTemplate: $("<tr><td>template</td></tr>"),
 				taskLink: $("<input name='link' type='radio' value='none'><input name='link' type='radio' value='current'><input name='link' type='radio' value='manual'>"),
 				stopIcons: $("<div>"),
 				pauseIcons: $("<div>"),
 				deleteIcons: $("<div>"),
 				linkIcons: $("<div>"),
-				table: $("<tbody>"),
+				table: $("<table>"),
 				pauseAllButton: $("<div>"),
 				deleteAllButton: $("<div>"),
 				totalTime: $("div"),
@@ -243,5 +244,37 @@ $(document).ready(function() {
 		controller.teardown();
 	})
 
+	test("Delete a timer", function() {
+		expect(8);
 
+		$("#qunit-fixture").append("<tr data-item-index='0'><td><div></div></td></tr>")
+
+		var item = {id:"testobject"};
+		
+		this.defaultConfig.model.items = [item]
+		this.defaultConfig.deleteIcons = $("#qunit-fixture div")
+		this.defaultConfig.model.deleteItem = function(index) {
+			ok(true, "delete called")
+			equal(index, "0");
+			this.items = []
+			return [item]
+		}
+		this.defaultConfig.historyRepo = {
+			add: function() { 
+				ok(true, "Assert Called")
+				deepEqual(arguments[0], item)
+			},
+		}
+		
+		var c = new Ananke.TimerController(this.defaultConfig);
+		var rows = 0
+
+		rows = this.defaultConfig.table.children().length
+		equal(rows, 1);
+		equal(this.defaultConfig.table.text(), "template")
+		this.defaultConfig.deleteIcons.click();
+		rows = this.defaultConfig.table.children().length
+		equal(rows, 1);
+		equal(this.defaultConfig.table.text(), "None")
+	})
 })

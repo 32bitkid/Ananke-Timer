@@ -1,14 +1,15 @@
 window.Ananke = (window.Ananke) ? window.Ananke : {}
 
 //  Ananke Items
-window.Ananke.ItemsRepository = function(repo) {
-	this.repo = repo;
+window.Ananke.ItemsRepository = function(obj, key) {
+	this.obj = obj;
+	this.key = key;
 	this.update();
 }
 
 $.extend(window.Ananke.ItemsRepository.prototype, {
 	update: function() {
-		var rawItems = localStorage[this.repo]
+		var rawItems = this.obj[this.key]
 		this.items = [];
 		if(rawItems) {
 			var items = JSON.parse(rawItems);
@@ -29,8 +30,9 @@ $.extend(window.Ananke.ItemsRepository.prototype, {
 		this.save();
 	},
 	deleteItem: function(i) {
-		this.items.splice(i,1);
+		var deletedItem = this.items.splice(i,1);
 		this.save();
+		return deletedItem;
 	},
 	deleteAll: function(i) {
 		this.items = []
@@ -50,7 +52,7 @@ $.extend(window.Ananke.ItemsRepository.prototype, {
 	},
 	save: function() {
 		var raw = JSON.stringify(this.items);
-		localStorage[this.repo] = raw;
+		this.obj[this.key] = raw;
 		return raw;
 	},
 	clearAllItems: function() {
@@ -91,6 +93,7 @@ $.extend(window.Ananke.HistoryRespository.prototype, {
 			var history = JSON.parse(rawItems);
 			for(var date in history)
 				for(var item in date) {
+					if(!this.history[date]) this.history[date] = [];
 					this.history[date][item] = new window.Ananke.Item(history[date][item]);
 				}
 		}

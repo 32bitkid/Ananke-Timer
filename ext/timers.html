@@ -4,11 +4,13 @@
 <script type="text/javascript" src='ananke.min.js'></script>
 <script type="text/javascript">
 $(function() {
-	var model = new window.Ananke.ItemsRepository("Ananke.items");
+	var model = new window.Ananke.ItemsRepository(localStorage, "Ananke.items");
+	var historyRepo = new window.Ananke.HistoryRespository(localStorage, "Ananke.history")
 	var newTaskForm = $("#newTask");
 	var config = {
 		// DAO
 		model: model,
+		historyRepo: historyRepo,
 
 		// New Task
 		newTaskForm:  newTaskForm,
@@ -154,6 +156,7 @@ tfoot { color: #999; }
 	</section>
 
 	<ul class="buttonList">
+		<li><a href="history.html">View History</a></li>
 		<li><button id="pauseAll">Pause All</button></li>
 		<li><button id="deleteAll">Delete All</button></li>
 	</ul>
