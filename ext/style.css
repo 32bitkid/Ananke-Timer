@@ -58,9 +58,9 @@ button:active {
 }
 
 section header button {
-	-webkit-box-shadow: 2px 2px 4px #335;
+	-webkit-box-shadow: 0px 0px 4px #335;
 }
 
 section header button:active {
-	-webkit-box-shadow: 1px 0px 1px #335;
+	-webkit-box-shadow: -2px -1px 1px #335;
 }

@@ -15,32 +15,91 @@ Date.prototype.getHumanTime = function() {
 
 }
 
-$(document).ready(function() {
-	var historyRepo = new window.Ananke.HistoryRespository(localStorage, "Ananke.history")
+window.Ananke.HistoryController = function(options) {
+	this.options = options
+	this.currentIndex = 0;
+	this.update();
 
-	var dates = historyRepo.availableDates();
-	$("#currentDay").text(dates[0].toDateString());
+	this.options.nextButton.click(jQuery.proxy(this.handleNext, this));
+	this.options.previousButton.click(jQuery.proxy(this.handlePrevious, this));
+}
 
-	var archivedItems = historyRepo.getFrom(dates[0]);
+window.Ananke.HistoryController.prototype.handleNext = function() {
+	this.next();
+}
 
-	var table = $("#taskHistory tbody")
-	for(var i = 0; i < archivedItems.length; i++) {
-		$("#historyTemplate").tmpl(archivedItems[i], {
-			startTime: function() {
-				return this.data.startTime.getHumanTime();
-			},
-			endTime: function() {
-				if(!this.data.isStopped) return "&mdash;"
-				return this.data.isStopped.getHumanTime();
-			},
-			breakTime: function() {
-				return this.data.getBreakTime();
-			},
-			totalDuration: function() {
-				return this.data.getHumanElapsed();
-			}
-		}).appendTo(table);
+window.Ananke.HistoryController.prototype.handlePrevious = function() {
+	this.previous();
+}
+
+window.Ananke.HistoryController.prototype.getDates = function() {
+	return this.options.historyRepo.availableDates();
+}
+
+window.Ananke.HistoryController.prototype.getSelectedDate = function() {
+	return this.options.historyRepo.availableDates()[this.currentIndex];
+}
+
+window.Ananke.HistoryController.prototype.next = function() {
+	var max = this.getDates().length;
+	this.currentIndex++;
+	if(this.currentIndex >= max) this.currentIndex = 0;
+}
+
+window.Ananke.HistoryController.prototype.prev = function() {
+	this.currentIndex--;
+	if(this.currentIndex < 0) this.currentIndex = this.getDates().length - 1;
+}
+
+window.Ananke.HistoryController.prototype.update = function() {
+	this.options.table.find("tbody").children().remove();
+	
+	var selectedDate = this.getSelectedDate();
+	if(selectedDate == undefined) {
+		this.options.heading.text("No History");
+		return;
 	}
+	this.options.heading.text(selectedDate.toDateString());
+
+	var archivedItems = this.options.historyRepo.getFrom(selectedDate);
+	archivedItems.sort(function(a,b) { return a.startTime.getTime() - b.startTime.getTime() });
+
+	for(var i = 0; i < archivedItems.length; i++) {
+		this.options.template.tmpl(archivedItems[i], this.constructor.templateHelpers).appendTo(this.options.table);
+	}
+}
+
+window.Ananke.HistoryController.templateHelpers = {}
+
+window.Ananke.HistoryController.templateHelpers.startTime = function() {
+	return this.data.startTime.getHumanTime();
+}
+
+window.Ananke.HistoryController.templateHelpers.endTime = function() {
+	if(!this.data.isStopped) return "&mdash;"
+	return this.data.isStopped.getHumanTime();
+}
+
+window.Ananke.HistoryController.templateHelpers.breakTime = function() {
+	return this.data.getBreakTime();
+}
+
+window.Ananke.HistoryController.templateHelpers.totalDuration = function() {
+	return this.data.getHumanElapsed();
+}
+		
+
+$(document).ready(function() {
+	var options = {
+		historyRepo: new window.Ananke.HistoryRespository(localStorage, "Ananke.history"),
+		template: $("#historyTemplate"),
+		table: $("#taskHistory"),
+		heading: $("#currentDay"),
+		nextButton: $("#history header button.next"),
+		previousButton: $("#history header button.prev")
+	}
+
+	new Ananke.HistoryController(options);
 })
 </script>
 <link href="style.css" rel="stylesheet" type="text/css">
@@ -65,6 +124,7 @@ section.history header span { line-height: 28px; }
 #taskHistory td.time { text-align: center; }
 
 #taskHistory col.time { width: 7em; }
+body { min-width: 800px; width: 80%; margin-left: auto; margin-right: auto;}
 </style>
 <script id="historyTemplate" type="text/x-jquery-tmpl">
 <tr>

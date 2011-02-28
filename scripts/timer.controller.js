@@ -97,7 +97,7 @@ $.extend(window.Ananke.TimerController.prototype, {
 	deleteAll: function() {
 		var response = confirm("Are you sure you want to delete all timers?");
 		if(!response) return;
-		this.model.stopAll();
+		this.model.deleteAll();
 		this.updateTable();
 	},
 	getLinkSetting: function() {
@@ -156,7 +156,7 @@ $.extend(window.Ananke.TimerController.prototype, {
 		var running = 0;
 		for(var i = 0; i < this.model.items.length; i++) {
 			var item = this.model.items[i];
-			if (item.isPaused == false) running++;
+			if (item.isPaused == false && item.isStopped == false) running++;
 			this.taskTemplate.tmpl(item, this.constructor.templateHelpers).appendTo(this.table).attr("data-item-index", i);
 		}
 

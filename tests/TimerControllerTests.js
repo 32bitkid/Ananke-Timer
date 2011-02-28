@@ -75,7 +75,7 @@ $(document).ready(function() {
 
 		expect(2);
 
-		this.defaultConfig.model.stopAll = function() { ok(true, "model.stopAll called"); }
+		this.defaultConfig.model.deleteAll = function() { ok(true, "model.deleteAll called"); }
 		var controller = new Ananke.TimerController(this.defaultConfig);
 		this.defaultConfig.deleteAllButton.click();
 		controller.teardown();

@@ -1,11 +1,11 @@
 window.Ananke = {};
 
 window.Ananke.initBadge = function() {
-	var model = new window.Ananke.ItemsRepository("Ananke.items");
+	var model = new window.Ananke.ItemsRepository(localStorage, "Ananke.items");
 	var running = 0;
 	for(var i = 0; i < model.items.length; i++) {
 		var item = model.items[i];
-		if (item.isPaused == false) running++;
+		if (item.isPaused == false && item.isStopped == false) running++;
 	}
 
 	window.Ananke.updateBadge(running);
