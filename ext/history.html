@@ -44,11 +44,13 @@ window.Ananke.HistoryController.prototype.next = function() {
 	var max = this.getDates().length;
 	this.currentIndex++;
 	if(this.currentIndex >= max) this.currentIndex = 0;
+	this.update();
 }
 
-window.Ananke.HistoryController.prototype.prev = function() {
+window.Ananke.HistoryController.prototype.previous = function() {
 	this.currentIndex--;
 	if(this.currentIndex < 0) this.currentIndex = this.getDates().length - 1;
+	this.update();
 }
 
 window.Ananke.HistoryController.prototype.update = function() {
@@ -95,8 +97,8 @@ $(document).ready(function() {
 		template: $("#historyTemplate"),
 		table: $("#taskHistory"),
 		heading: $("#currentDay"),
-		nextButton: $("#history header button.next"),
-		previousButton: $("#history header button.prev")
+		nextButton: $("section.history header div.next button"),
+		previousButton: $("section.history header div.prev button")
 	}
 
 	new Ananke.HistoryController(options);
