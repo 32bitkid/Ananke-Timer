@@ -5,9 +5,10 @@
 <script type="text/javascript" src='ananke.min.js'></script>
 <script type="text/javascript">
 Date.prototype.getHumanTime = function() {
-	var hours = this.getHours() + 1
+	var hours = this.getHours()
 	var pm = (hours >= 12)
 	if(pm) hours -= 12
+	if(hours == 0) hours += 12;
 
 	var minutes = this.getMinutes();
 	if(minutes < 10) minutes = "0" + minutes;
