@@ -51,8 +51,12 @@ $.extend(window.Ananke.Item.prototype, {
 		}
 	},
 	stop: function() {
-		if(this.isPaused) this.pause();
-		this.isStopped = new Date();
+		if(this.isPaused) {
+			this.isStopped = this.isPaused
+			this.isPaused = false;	
+		} else {
+			this.isStopped = new Date();
+		}
 	},
 	getStatus: function() {
 		var status = []
