@@ -13,7 +13,26 @@ Date.prototype.getHumanTime = function() {
 	var minutes = this.getMinutes();
 	if(minutes < 10) minutes = "0" + minutes;
 	return hours+":"+minutes + " " + ((pm)?"pm":"am");
+}
 
+window.Ananke.Confirm = function(options) {
+	this.modal = options.modal;
+	this.ok = options.ok;
+	this.cancel = options.cancel;
+	this.message = options.message;
+	this.title = options.title;
+}
+
+window.Ananke.Confirm.prototype.show = function(message, title, ok, cancel) {
+	this.modal.show();
+	this.message.html(message);
+	this.title.html(title);
+	this.ok.unbind("click").click(ok).click(jQuery.proxy(this._dismiss, this));
+	this.cancel.unbind("click").click(cancel).click(jQuery.proxy(this._dismiss, this));
+}
+
+window.Ananke.Confirm.prototype._dismiss = function() {
+	this.modal.hide();
 }
 
 window.Ananke.HistoryController = function(options) {
@@ -41,22 +60,54 @@ window.Ananke.HistoryController.prototype.getSelectedDate = function() {
 	return this.options.historyRepo.availableDates()[this.currentIndex];
 }
 
-window.Ananke.HistoryController.prototype.next = function() {
+window.Ananke.HistoryController.prototype.previous = function() {
 	var max = this.getDates().length;
-	this.currentIndex++;
-	if(this.currentIndex >= max) this.currentIndex = 0;
+	var newIndex = this.currentIndex + 1;
+	if(newIndex >= max) {
+		var dates = this.getDates();
+		newIndex = 0;
+		var newDate = dates[newIndex].toDateString();
+		var response = this.options.confirm.show(
+			"<p>There is no more past data.</p></p>Do you want to go forward to " + newDate + "</p>",
+			"Are you sure?",
+			jQuery.proxy(this.first, this));
+		return;
+	}
+	this.currentIndex = newIndex;
 	this.update();
 }
 
-window.Ananke.HistoryController.prototype.previous = function() {
-	this.currentIndex--;
-	if(this.currentIndex < 0) this.currentIndex = this.getDates().length - 1;
+window.Ananke.HistoryController.prototype.next = function() {
+	var newIndex = this.currentIndex - 1;
+
+	if(newIndex < 0) {
+		var dates = this.getDates();
+		newIndex = dates.length - 1;
+		var newDate = dates[newIndex].toDateString();
+		var response = this.options.confirm.show(
+			"<p>There is no more recent data.</p></p>Do you want to go back to " + newDate + "</p>",
+			"Are you sure?",
+			jQuery.proxy(this.last, this));
+		return;
+	}
+
+	this.currentIndex = newIndex;
+	this.update();
+}
+
+window.Ananke.HistoryController.prototype.first = function() {
+	this.currentIndex = 0;
+	this.update();
+}
+
+window.Ananke.HistoryController.prototype.last = function() {
+	this.currentIndex = this.getDates().length - 1;
 	this.update();
 }
 
 window.Ananke.HistoryController.prototype.update = function() {
 	this.options.table.find("tbody").children().remove();
-	
+
 	var selectedDate = this.getSelectedDate();
 	if(selectedDate == undefined) {
 		this.options.heading.text("No History");
@@ -90,16 +141,25 @@ window.Ananke.HistoryController.templateHelpers.breakTime = function() {
 window.Ananke.HistoryController.templateHelpers.totalDuration = function() {
 	return this.data.getHumanElapsed();
 }
-		
+
 
 $(document).ready(function() {
+	var c = new Ananke.Confirm({
+		modal: $("#confirm"),
+		ok: $("#confirm button.ok"),
+		cancel: $("#confirm button.cancel"),
+		message: $("#confirm details summary"),
+		title: $("#confirm header")
+	});
+
 	var options = {
 		historyRepo: new window.Ananke.HistoryRespository(localStorage, "Ananke.history"),
 		template: $("#historyTemplate"),
 		table: $("#taskHistory"),
 		heading: $("#currentDay"),
 		nextButton: $("section.history header div.next button"),
-		previousButton: $("section.history header div.prev button")
+		previousButton: $("section.history header div.prev button"),
+		confirm: c
 	}
 
 	new Ananke.HistoryController(options);
@@ -108,9 +168,9 @@ $(document).ready(function() {
 <link href="style.css" rel="stylesheet" type="text/css">
 <style>
 section.history header {
-	height: 28px; 
+	height: 28px;
 	text-align: center;
-	position: relative; 
+	position: relative;
 }
 
 section.history header .prev,
@@ -127,6 +187,28 @@ section.history header span { line-height: 28px; }
 #taskHistory td.time { text-align: center; }
 
 #taskHistory col.time { width: 7em; }
+
+.modal {
+	display: none;
+	position: fixed;
+	top: 0; left: 0;
+	height: 100%; width: 100%;
+	background-color: rgba(0,0,0,0.5);
+}
+
+.modal section {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	width: 300px;
+	margin-top: -50px;
+	margin-left: -150px;
+}
+
+.modal section details { background-color: white; height: 100px; text-align: center; }
+.modal section details ul.buttons { position: absolute; bottom: 1em; left:0; right: 0; display: block; text-align: center; }
+.modal section details ul.buttons li { display: inline; }
+
 body { min-width: 800px; width: 80%; margin-left: auto; margin-right: auto;}
 </style>
 <script id="historyTemplate" type="text/x-jquery-tmpl">
@@ -164,5 +246,18 @@ body { min-width: 800px; width: 80%; margin-left: auto; margin-right: auto;}
 			</table>
 		</details>
 	</section>
+
+	<div class="modal" id="confirm">
+		<section>
+		<header>Alert</header>
+		<details>
+		<summary>Some text</summary>
+		<ul class="buttons">
+			<li><button class="ok">Ok</button></li>
+			<li><button class="cancel">Cancel</button></li>
+		</ul>
+		</details>
+		</section>
+	</div>
 </body>
 </html>
