@@ -82,7 +82,8 @@ $.extend(window.Ananke.TimerController.prototype, {
 	handleDelete: function(e) {
 		var index = $(e.currentTarget).closest("tr").attr("data-item-index");
 		var removedItem = this.model.deleteItem(index);
-		this.historyRepo.add.apply(this.historyRepo, removedItem);
+		if(this.anankeOptions.getArchiveStoppedTimers())
+			this.historyRepo.add.apply(this.historyRepo, removedItem);
 		this.updateTable();
 	},
 	handlePause: function(e) {

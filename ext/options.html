@@ -4,10 +4,16 @@
 	<script type="text/javascript" src='ananke.min.js'></script>
 	<script type="text/javascript">
 $(function() {
-	if(window.Ananke.options.getPauseOnCreate())
+	if(Ananke.options.getPauseOnCreate())
 		$("#pauseOnCreate").attr("checked", "checked");
 	else 
 		$("#pauseOnCreate").removeAttr("checked");
+
+	if(Ananke.options.getArchiveStoppedTimers()) 
+		$("#archiveStoppedTimers").attr("checked", "checked");
+	else 
+		$("#archiveStoppedTimers").removeAttr("checked");
+
 
 	switch(window.Ananke.options.getBadgeSetting()) {
 		case Ananke.options.badgeSettings.showCurrentlyRunning:
@@ -24,10 +30,12 @@ $(function() {
 
 	$("#save").click(function() {
 		var pauseOnCreate = $("#pauseOnCreate:checked").val();
+		var archiveOnStop = $("#archiveStoppedTimers:checked").val();
 		var badgeSetting = $("[name='badgeOptions']:checked").val();
 
 		window.Ananke.options.setPauseOnCreate(pauseOnCreate);
 		window.Ananke.options.setBadgeSetting(badgeSetting);
+		window.Ananke.options.setArchiveStoppedTimers(archiveOnStop);
 
 		$("#status").text("Saved...");
 		window.Ananke.initBadge();
@@ -49,7 +57,8 @@ body { background-color: white; padding: 1em; width: 500px; margin: 0 auto; }
 	<section>
 		<header>General Options</header>
 		<details>
-			<div><input type="checkbox" id="pauseOnCreate"><label for="pauseOnCreate">New Timer Pauses Running Timers</label></div>
+			<div><input type="checkbox" id="pauseOnCreate" value="1"><label for="pauseOnCreate">New Timer Pauses Running Timers</label></div>
+			<div><input type="checkbox" id="archiveStoppedTimers" value="1"><label for="archiveStoppedTimers">Archive Stopped Timer</label></div>
 		</details>
 	</section>
 	<section>

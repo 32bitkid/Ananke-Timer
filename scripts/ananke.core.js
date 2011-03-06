@@ -31,7 +31,9 @@ window.Ananke.options = {
 	getBadgeSetting: function() { return localStorage["Ananke.options.badgeSetting"]; },
 	setBadgeSetting: function(val) { localStorage["Ananke.options.badgeSetting"] = val; },
 	getLinkType: function() { return localStorage["Ananke.options.linkType"]; },
-	setLinkType: function(val) { localStorage["Ananke.options.linkType"] = val; }
+	setLinkType: function(val) { localStorage["Ananke.options.linkType"] = val; },
+	getArchiveStoppedTimers: function() { return localStorage["Ananke.options.archiveStoppedTimers"] == "true"; },
+	setArchiveStoppedTimers: function(val) { localStorage["Ananke.options.archiveStoppedTimers"] = (val) ? "true" : "false"; }
 }
 
 window.Ananke.options.badgeSettings = { hidden: "0", showCurrentlyRunning: "1", showOnNoneRunning: "2" }
