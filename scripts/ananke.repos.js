@@ -99,6 +99,10 @@ $.extend(window.Ananke.HistoryRespository.prototype, {
 		}
 		this.save();
 	},
+	clear: function(date) {
+		delete this.history[date.toDateString()];
+		this.save();
+	},
 	getFrom: function(date) {
 		return this.history[date.toDateString()];
 	},

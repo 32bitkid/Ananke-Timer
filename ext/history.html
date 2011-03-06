@@ -42,6 +42,21 @@ window.Ananke.HistoryController = function(options) {
 
 	this.options.nextButton.click(jQuery.proxy(this.handleNext, this));
 	this.options.previousButton.click(jQuery.proxy(this.handlePrevious, this));
+	this.options.clearButton.click(jQuery.proxy(this.handleClear, this));
+}
+
+window.Ananke.HistoryController.prototype.handleClear = function() {
+	this.options.confirm.show(
+		"<p>Are you sure you want to clear the history for this day?</p>",
+		"Are you sure?",
+		jQuery.proxy(this.clearCurrentDay, this)
+	);
+}
+
+window.Ananke.HistoryController.prototype.clearCurrentDay = function() {
+	var dates = this.getDates();
+	this.options.historyRepo.clear(dates[this.currentIndex]);
+	this.first();
 }
 
 window.Ananke.HistoryController.prototype.handleNext = function() {
@@ -111,8 +126,11 @@ window.Ananke.HistoryController.prototype.update = function() {
 	var selectedDate = this.getSelectedDate();
 	if(selectedDate == undefined) {
 		this.options.heading.text("No History");
+		this.options.clearButton.hide();
 		return;
 	}
+
+	this.options.clearButton.show();
 	this.options.heading.text(selectedDate.toDateString());
 
 	var archivedItems = this.options.historyRepo.getFrom(selectedDate);
@@ -159,6 +177,7 @@ $(document).ready(function() {
 		heading: $("#currentDay"),
 		nextButton: $("section.history header div.next button"),
 		previousButton: $("section.history header div.prev button"),
+		clearButton: $("section.history button.clear"),
 		confirm: c
 	}
 
@@ -209,6 +228,11 @@ section.history header span { line-height: 28px; }
 .modal section details ul.buttons { position: absolute; bottom: 1em; left:0; right: 0; display: block; text-align: center; }
 .modal section details ul.buttons li { display: inline; }
 
+#historyOptions {
+	margin-top: 1em;
+	text-align: right;
+}
+
 body { min-width: 800px; width: 80%; margin-left: auto; margin-right: auto;}
 </style>
 <script id="historyTemplate" type="text/x-jquery-tmpl">
@@ -244,6 +268,9 @@ body { min-width: 800px; width: 80%; margin-left: auto; margin-right: auto;}
 				</thead>
 				<tbody></tbody>
 			</table>
+			<ul id="historyOptions" class="buttons">
+				<li><button class="clear">Clear</button></li>
+			</ul>
 		</details>
 	</section>
 
